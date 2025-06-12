@@ -3,13 +3,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export async function apiFetch(
   path: string,
   options: RequestInit = {},
-  credentials?: RequestCredentials
+  credentials: RequestCredentials = "include"
 ) {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
+    credentials, // ✅ Correct placement
     headers: {
       "Content-Type": "application/json",
-      ...(credentials && { credentials }),
       ...(options.headers || {}),
     },
   });

@@ -78,7 +78,7 @@ export default function TicketsTable({ tickets }: TicketsTableProps) {
             <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white">
               <Eye className="h-4 w-4" />
             </Button>
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white">
                   <MoreHorizontal className="h-4 w-4" />
@@ -95,7 +95,7 @@ export default function TicketsTable({ tickets }: TicketsTableProps) {
                   Reassign
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </div>
         </div>
       ))}
