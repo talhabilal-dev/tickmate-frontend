@@ -84,7 +84,7 @@ export default function HomePage() {
                 size="lg"
                 className="border-zinc-700 text-zinc-800 hover:text-zinc-100 hover:bg-zinc-800"
               >
-                <Link href="/login">Log In</Link>
+                <Link href="/auth">Log In</Link>
               </Button>
             </motion.div>
           </motion.div>

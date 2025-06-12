@@ -32,20 +32,20 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case "critical":
-        return "bg-red-500/10 text-red-400 border-red-500/20"
-      case "high":
-        return "bg-orange-500/10 text-orange-400 border-orange-500/20"
-      case "medium":
-        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-      case "low":
-        return "bg-green-500/10 text-green-400 border-green-500/20"
-      default:
-        return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
-    }
-  }
+  // const getPriorityColor = (priority: string) => {
+  //   switch (priority.toLowerCase()) {
+  //     case "critical":
+  //       return "bg-red-500/10 text-red-400 border-red-500/20"
+  //     case "high":
+  //       return "bg-orange-500/10 text-orange-400 border-orange-500/20"
+  //     case "medium":
+  //       return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+  //     case "low":
+  //       return "bg-green-500/10 text-green-400 border-green-500/20"
+  //     default:
+  //       return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+  //   }
+  // }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString()
@@ -86,7 +86,7 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
             </DialogTitle>
             <div className="flex gap-2">
               <Badge className={getStatusColor(status)}>{status}</Badge>
-              <Badge className={getPriorityColor(ticket.priority)}>{ticket.priority}</Badge>
+              {/* <Badge className={getPriorityColor(ticket.priority)}>{ticket.priority}</Badge> */}
             </div>
           </div>
         </DialogHeader>
@@ -101,7 +101,7 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
             </div>
 
             {/* Skills */}
-            <div>
+            {/* <div>
               <h3 className="text-lg font-semibold text-white mb-3">Required Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {ticket.skills.map((skill: string) => (
@@ -110,10 +110,10 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
                   </Badge>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Comments */}
-            <div>
+            {/* <div>
               <h3 className="text-lg font-semibold text-white mb-4">Activity & Comments</h3>
               <div className="space-y-4">
                 {comments.map((comment) => (
@@ -139,7 +139,7 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
                 ))}
               </div>
 
-              {/* Add Comment */}
+           
               <div className="mt-6 space-y-3">
                 <Textarea
                   placeholder="Add a comment..."
@@ -157,7 +157,7 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
                   Add Comment
                 </Button>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Sidebar */}
@@ -204,13 +204,13 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-zinc-500" />
                   <span className="text-zinc-400">Reporter:</span>
-                  <span className="text-white">{ticket.reporter}</span>
+                  {/* <span className="text-white">{ticket.reporter}</span> */}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-zinc-500" />
                   <span className="text-zinc-400">Assignee:</span>
-                  {ticket.assignee !== "Unassigned" ? (
+                  {/* {ticket.assignee !== "Unassigned" ? (
                     <div className="flex items-center gap-2">
                       <Avatar className="h-5 w-5">
                         <AvatarFallback className="bg-emerald-500 text-xs">
@@ -222,23 +222,23 @@ export default function TicketDetailModal({ ticket, isOpen, onClose }: TicketDet
                       </Avatar>
                       <span className="text-white">{ticket.assignee}</span>
                     </div>
-                  ) : (
+                  ) : ( */}
                     <Badge variant="outline" className="border-zinc-700 text-zinc-500">
                       Unassigned
                     </Badge>
-                  )}
+                  {/* )} */}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-zinc-500" />
                   <span className="text-zinc-400">Created:</span>
-                  <span className="text-white">{formatDate(ticket.created)}</span>
+                  <span className="text-white">{formatDate(ticket.createdAt)}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-zinc-500" />
                   <span className="text-zinc-400">Updated:</span>
-                  <span className="text-white">{formatDate(ticket.updated)}</span>
+                  <span className="text-white">{formatDate(ticket.updatedAt)}</span>
                 </div>
               </div>
             </div>

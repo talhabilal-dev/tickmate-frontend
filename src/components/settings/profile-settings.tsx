@@ -20,10 +20,6 @@ export default function ProfileSettings() {
     fullName: "John",
     lastName: "Doe",
     email: "john.doe@example.com",
-    bio: "Senior Full Stack Developer with 5+ years of experience in React, Node.js, and cloud technologies.",
-    location: "San Francisco, CA",
-    website: "https://johndoe.dev",
-    avatar: "/placeholder.svg?height=100&width=100",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -49,27 +45,11 @@ export default function ProfileSettings() {
           {/* Avatar */}
           <div className="flex items-center gap-6">
             <Avatar className="h-20 w-20">
-              <AvatarImage
-                src={profile.avatar || "/placeholder.svg"}
-                alt="Profile"
-              />
               <AvatarFallback className="bg-emerald-500 text-white text-lg">
                 {profile.fullName[0]}
-                {profile.lastName[0]}
+                {profile.fullName[1]}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <Button
-                variant="outline"
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-              >
-                <Camera className="h-4 w-4 mr-2" />
-                Change Avatar
-              </Button>
-              <p className="text-sm text-zinc-500 mt-2">
-                JPG, GIF or PNG. 1MB max.
-              </p>
-            </div>
           </div>
 
           {/* Name */}

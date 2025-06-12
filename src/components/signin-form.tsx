@@ -14,8 +14,10 @@ import {
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SigninForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +64,7 @@ export default function SigninForm() {
 
       if (res.success) {
         toast.success("Login successful!");
-        //TODO
+        router.push("/dashboard");
       }
 
       if (!res.success) {
@@ -87,7 +89,7 @@ export default function SigninForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="text-sm text-red-400 bg-red-900 border border-red-700 rounded p-2">
+            <div className="text-sm text-red-200 bg-red-900 border border-red-700 rounded p-2">
               {error}
             </div>
           )}

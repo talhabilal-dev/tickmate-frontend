@@ -13,42 +13,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus, X, Star, Save } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
-interface Skill {
-  name: string;
-  level: "Beginner" | "Intermediate" | "Advanced" | "Expert";
-  category: string;
-}
+type Skill = {
+  skills?: string[];
+};
 
 export default function SkillsSettings() {
-  const [skills, setSkills] = useState<Skill[]>([
-    { name: "React", level: "Expert", category: "Frontend" },
-    { name: "Node.js", level: "Advanced", category: "Backend" },
-    { name: "TypeScript", level: "Advanced", category: "Programming" },
-    { name: "Python", level: "Intermediate", category: "Programming" },
-    { name: "AWS", level: "Intermediate", category: "Cloud" },
-    { name: "Docker", level: "Advanced", category: "DevOps" },
-  ]);
+  const [skills, setSkills] = useState<string[]>([]);
 
-  const [newSkill, setNewSkill] = useState({
-    name: "",
-    level: "Beginner" as const,
-    category: "",
-  });
+  const [newSkill, setNewSkill] = useState<{ name: string } | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const categories = [
-    "Frontend",
-    "Backend",
-    "Programming",
-    "Database",
-    "Cloud",
-    "DevOps",
-    "Mobile",
-    "Design",
-    "Other",
-  ];
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await apiFetch("/auth/user");
+      if (res?.user?.skills) {
+        setSkills(res.user?.skills);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const skillSuggestions = [
     "JavaScript",
@@ -79,9 +67,9 @@ export default function SkillsSettings() {
   ];
 
   const addSkill = () => {
-    if (newSkill.name && newSkill.category) {
-      setSkills([...skills, newSkill]);
-      setNewSkill({ name: "", level: "Beginner", category: "" });
+    if (newSkill) {
+      setSkills([...skills, newSkill.name]);
+      setNewSkill(null);
     }
   };
 
@@ -89,46 +77,33 @@ export default function SkillsSettings() {
     setSkills(skills.filter((_, i) => i !== index));
   };
 
-  const updateSkillLevel = (index: number, level: Skill["level"]) => {
-    const updatedSkills = [...skills];
-    updatedSkills[index].level = level;
-    setSkills(updatedSkills);
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "Beginner":
-        return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-      case "Intermediate":
-        return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-      case "Advanced":
-        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-      case "Expert":
-        return "bg-violet-500/10 text-violet-400 border-violet-500/20";
-      default:
-        return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
-    }
-  };
-
-  const getLevelStars = (level: string) => {
-    const stars = {
-      Beginner: 1,
-      Intermediate: 2,
-      Advanced: 3,
-      Expert: 4,
-    };
-    return stars[level as keyof typeof stars] || 1;
-  };
-
   const handleSave = async () => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    console.log("Skills updated:", skills);
+    try {
+      setIsLoading(true);
+      const res = await apiFetch("/auth/update-skills", {
+        method: "PUT",
+        body: JSON.stringify({
+          skills,
+        }),
+      });
+
+      if (res.success) {
+        toast.success("✅ Skills updated successfully!");
+      }
+
+      if (!res.success) {
+        toast.error("❌ Failed to update skills. Please try again.");
+      }
+    } catch (error) {
+      toast.error("🚨 An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {}
       <Card className="bg-zinc-900/50 border-zinc-800">
         <CardHeader>
           <CardTitle className="text-white">Skills Management</CardTitle>
@@ -147,9 +122,12 @@ export default function SkillsSettings() {
                 </Label>
                 <Input
                   id="skillName"
-                  value={newSkill.name}
+                  value={newSkill?.name ?? ""}
                   onChange={(e) =>
-                    setNewSkill({ ...newSkill, name: e.target.value })
+                    setNewSkill({
+                      ...(newSkill ?? { name: "" }),
+                      name: e.target.value,
+                    })
                   }
                   placeholder="e.g., React, Python"
                   className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500"
@@ -158,7 +136,7 @@ export default function SkillsSettings() {
               <div className="flex items-end">
                 <Button
                   onClick={addSkill}
-                  disabled={!newSkill.name || !newSkill.category}
+                  disabled={!newSkill?.name}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -172,7 +150,7 @@ export default function SkillsSettings() {
                 {skillSuggestions
                   .filter(
                     (suggestion) =>
-                      !skills.some((skill) => skill.name === suggestion)
+                      !skills.some((skill) => skill === suggestion)
                   )
                   .slice(0, 10)
                   .map((suggestion) => (
@@ -181,7 +159,10 @@ export default function SkillsSettings() {
                       variant="outline"
                       className="cursor-pointer border-zinc-700 text-zinc-400 hover:border-emerald-500 hover:text-emerald-400"
                       onClick={() =>
-                        setNewSkill({ ...newSkill, name: suggestion })
+                        setNewSkill({
+                          ...(newSkill ?? { name: "" }),
+                          name: suggestion,
+                        })
                       }
                     >
                       {suggestion}
@@ -196,36 +177,17 @@ export default function SkillsSettings() {
             <h3 className="text-lg font-medium text-white mb-4">
               Your Skills ({skills.length})
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-3xl">
               {skills.map((skill, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-medium text-white">{skill.name}</h4>
-                      <Badge
-                        variant="outline"
-                        className="border-zinc-700 text-zinc-400 text-xs"
-                      >
-                        {skill.category}
-                      </Badge>
-                    </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[...Array(4)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 ${
-                              i < getLevelStars(skill.level)
-                                ? "text-emerald-400 fill-current"
-                                : "text-zinc-600"
-                            }`}
-                          />
-                        ))}
-                      </div>
+                      <h4 className="font-medium text-white">{skill}</h4>
                     </div>
+                    <div className="flex items-center gap-2"></div>
                   </div>
                   <Button
                     variant="ghost"
