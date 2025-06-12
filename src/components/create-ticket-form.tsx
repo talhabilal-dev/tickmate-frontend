@@ -1,27 +1,33 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 interface CreateTicketFormProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [priority, setPriority] = useState("")
-  const [category, setCategory] = useState("")
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("");
+  const [category, setCategory] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableSkills = [
     "React",
@@ -44,18 +50,20 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
     "DevOps",
     "AWS",
     "Docker",
-  ]
+  ];
 
   const handleSkillToggle = (skill: string) => {
-    setSelectedSkills((prev) => (prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]))
-  }
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     console.log({
       title,
@@ -63,14 +71,14 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
       priority,
       category,
       skills: selectedSkills,
-    })
+    });
 
-    setIsSubmitting(false)
-    onClose()
-  }
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-2">
       <div className="space-y-2">
         <Label htmlFor="title" className="text-zinc-200">
           Title *
@@ -141,7 +149,9 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
 
       <div className="space-y-2">
         <Label className="text-zinc-200">Related Skills</Label>
-        <p className="text-sm text-zinc-500 mb-3">Select skills that might be relevant to resolving this ticket</p>
+        <p className="text-sm text-zinc-500 mb-3">
+          Select skills that might be relevant to resolving this ticket
+        </p>
         <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
           {availableSkills.map((skill) => (
             <Badge
@@ -164,7 +174,10 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
             <p className="text-sm text-zinc-500 mb-2">Selected skills:</p>
             <div className="flex flex-wrap gap-1">
               {selectedSkills.map((skill) => (
-                <Badge key={skill} className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                <Badge
+                  key={skill}
+                  className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                >
                   {skill}
                 </Badge>
               ))}
@@ -191,5 +204,5 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
         </Button>
       </div>
     </form>
-  )
+  );
 }

@@ -5,20 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/dashboard-layout";
 import ProfileSettings from "@/components/settings/profile-settings";
 import SkillsSettings from "@/components/settings/skills-settings";
-import NotificationSettings from "@/components/settings/notification-settings";
 import SecuritySettings from "@/components/settings/security-settings";
-import PreferencesSettings from "@/components/settings/preferences-settings";
-import TeamSettings from "@/components/settings/team-settings";
-import IntegrationsSettings from "@/components/settings/integrations-settings";
-import {
-  User,
-  Zap,
-  Bell,
-  Shield,
-  SettingsIcon,
-  Users,
-  Plug,
-} from "lucide-react";
+import { User, Zap, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -26,11 +14,7 @@ export default function SettingsPage() {
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
     { id: "skills", label: "Skills", icon: Zap },
-    { id: "notifications", label: "Notifications", icon: Bell },
     { id: "security", label: "Security", icon: Shield },
-    { id: "preferences", label: "Preferences", icon: SettingsIcon },
-    { id: "team", label: "Team", icon: Users },
-    { id: "integrations", label: "Integrations", icon: Plug },
   ];
 
   return (
@@ -71,24 +55,8 @@ export default function SettingsPage() {
             <SkillsSettings />
           </TabsContent>
 
-          <TabsContent value="notifications">
-            <NotificationSettings />
-          </TabsContent>
-
           <TabsContent value="security">
             <SecuritySettings />
-          </TabsContent>
-
-          <TabsContent value="preferences">
-            <PreferencesSettings />
-          </TabsContent>
-
-          <TabsContent value="team">
-            <TeamSettings />
-          </TabsContent>
-
-          <TabsContent value="integrations">
-            <IntegrationsSettings />
           </TabsContent>
         </Tabs>
       </div>
