@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,25 +12,76 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Home, Ticket, Users, Settings, BarChart3, Menu, X, LogOut, User, Bell } from "lucide-react"
-import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+} from "@/components/ui/dropdown-menu";
+import {
+  Home,
+  Ticket,
+  Users,
+  Settings,
+  BarChart3,
+  Menu,
+  X,
+  LogOut,
+  User,
+  Bell,
+} from "lucide-react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const router = useRouter();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home, current: true },
-    { name: "Tickets", href: "/dashboard/tickets", icon: Ticket, current: false },
+    {
+      name: "Tickets",
+      href: "/dashboard/tickets",
+      icon: Ticket,
+      current: false,
+    },
     { name: "Team", href: "/dashboard/team", icon: Users, current: false },
-    { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, current: false },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings, current: false },
-  ]
+    {
+      name: "Analytics",
+      href: "/dashboard/analytics",
+      icon: BarChart3,
+      current: false,
+    },
+    {
+      name: "Settings",
+      href: "/dashboard/settings",
+      icon: Settings,
+      current: false,
+    },
+  ];
+
+  const signOut = async () => {
+    try {
+      const res = await apiFetch("/auth/logout", {
+        method: "POST",
+      });
+
+      if (res.success) {
+        toast.success("✅ Signed out successfully!");
+        router.push("/auth");
+      }
+
+      if (!res.success) {
+        toast.error("❌ Failed to sign out. Please try again.");
+      }
+    } catch (error) {
+      console.error("API error while signing out:", error);
+      toast.error("🚨 An unexpected error occurred.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -56,7 +107,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-500">
                   TicketMatch
                 </span>
-                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(false)}
+                >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -104,6 +159,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {item.name}
               </Link>
             ))}
+
+            <Button
+              variant={"destructive"}
+              onClick={() => signOut()}
+              className="w-full cursor-pointer"
+            >
+              Logout
+            </Button>
           </nav>
         </div>
       </div>
@@ -113,29 +176,54 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Top bar */}
         <div className="sticky top-0 z-30 bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-800">
           <div className="flex items-center justify-between px-4 py-4">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
 
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-zinc-400 hover:text-white"
+              >
                 <Bell className="h-5 w-5" />
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-                      <AvatarFallback className="bg-emerald-500 text-white">JD</AvatarFallback>
+                      <AvatarImage
+                        src="/placeholder.svg?height=32&width=32"
+                        alt="User"
+                      />
+                      <AvatarFallback className="bg-emerald-500 text-white">
+                        JD
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-zinc-900 border-zinc-800" align="end" forceMount>
+                <DropdownMenuContent
+                  className="w-56 bg-zinc-900 border-zinc-800"
+                  align="end"
+                  forceMount
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-white">John Doe</p>
-                      <p className="text-xs leading-none text-zinc-400">john@example.com</p>
+                      <p className="text-sm font-medium leading-none text-white">
+                        John Doe
+                      </p>
+                      <p className="text-xs leading-none text-zinc-400">
+                        john@example.com
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-zinc-800" />
@@ -162,5 +250,5 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="p-6">{children}</main>
       </div>
     </div>
-  )
+  );
 }
