@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -11,16 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import {
-  Shield,
-  Key,
-  Smartphone,
-  Eye,
-  EyeOff,
-  AlertTriangle,
-} from "lucide-react";
+
+import { Key, Eye, EyeOff } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export default function SecuritySettings() {
   const [passwords, setPasswords] = useState({
@@ -33,43 +27,40 @@ export default function SecuritySettings() {
     new: false,
     confirm: false,
   });
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const sessions = [
-    {
-      id: 1,
-      device: "MacBook Pro",
-      location: "San Francisco, CA",
-      lastActive: "Active now",
-      current: true,
-    },
-    {
-      id: 2,
-      device: "iPhone 14",
-      location: "San Francisco, CA",
-      lastActive: "2 hours ago",
-      current: false,
-    },
-    {
-      id: 3,
-      device: "Chrome on Windows",
-      location: "New York, NY",
-      lastActive: "3 days ago",
-      current: false,
-    },
-  ];
 
   const handlePasswordChange = async () => {
     if (passwords.new !== passwords.confirm) {
-      alert("New passwords don't match");
+      toast.error("❌ New password and confirm password do not match.");
       return;
     }
+
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setPasswords({ current: "", new: "", confirm: "" });
-    console.log("Password changed");
+
+    try {
+      const res = await apiFetch("/auth/update-password", {
+        method: "PUT",
+        body: JSON.stringify({
+          oldPassword: passwords.current,
+          newPassword: passwords.new,
+        }),
+      });
+
+      if (!res.success) {
+        throw new Error(res.message || "❌ Failed to change password.");
+      }
+
+      toast.success("✅ Password changed successfully!");
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "❌ Something went wrong. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = (field: keyof typeof showPasswords) => {

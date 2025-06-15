@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,7 +28,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -37,30 +36,16 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const router = useRouter();
+  const pathname = usePathname();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Home, current: true },
-    {
-      name: "Tickets",
-      href: "/dashboard/tickets",
-      icon: Ticket,
-      current: false,
-    },
-    { name: "Team", href: "/dashboard/team", icon: Users, current: false },
-    {
-      name: "Analytics",
-      href: "/dashboard/analytics",
-      icon: BarChart3,
-      current: false,
-    },
-    {
-      name: "Settings",
-      href: "/dashboard/settings",
-      icon: Settings,
-      current: false,
-    },
+    { name: "Dashboard", href: "/dashboard", icon: Home },
+    { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
+    { name: "My Tickets", href: "/dashboard/assigned-tickets", icon: Ticket },
+    { name: "Team", href: "/dashboard/team", icon: Users },
+    { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   const signOut = async () => {
@@ -83,26 +68,34 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   };
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="min-h-screen bg-zinc-950">
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-zinc-900/80 backdrop-blur-sm lg:hidden"
+            onClick={closeSidebar}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Mobile sidebar */}
       <AnimatePresence>
         {sidebarOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-zinc-900/80 backdrop-blur-sm lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800 lg:hidden"
-            >
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800 lg:hidden"
+          >
+            <div className="flex flex-col h-full">
               <div className="flex items-center justify-between p-4 border-b border-zinc-800">
                 <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-500">
                   TicketMatch
@@ -110,18 +103,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={closeSidebar}
+                  className="text-zinc-400 hover:text-white"
                 >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <nav className="p-4 space-y-2">
+              <nav className="flex-1 p-4 space-y-2">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
+                    onClick={closeSidebar}
                     className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      item.current
+                      pathname === item.href
                         ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                         : "text-zinc-400 hover:text-white hover:bg-zinc-800"
                     }`}
@@ -131,8 +126,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </Link>
                 ))}
               </nav>
-            </motion.div>
-          </>
+              <div className="p-4 border-t border-zinc-800">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    closeSidebar();
+                    signOut();
+                  }}
+                  className="w-full"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -150,7 +158,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 key={item.name}
                 href={item.href}
                 className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  item.current
+                  pathname === item.href
                     ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800"
                 }`}
@@ -159,15 +167,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {item.name}
               </Link>
             ))}
-
-            <Button
-              variant={"destructive"}
-              onClick={() => signOut()}
-              className="w-full cursor-pointer"
-            >
+          </nav>
+          <div className="p-4 border-t border-zinc-800">
+            <Button variant="destructive" onClick={signOut} className="w-full">
+              <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
-          </nav>
+          </div>
         </div>
       </div>
 
@@ -179,7 +185,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden text-zinc-400 hover:text-white"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
@@ -236,7 +242,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-zinc-800" />
-                  <DropdownMenuItem className="text-zinc-300 hover:bg-zinc-800 hover:text-white">
+                  <DropdownMenuItem
+                    className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    onClick={signOut}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>

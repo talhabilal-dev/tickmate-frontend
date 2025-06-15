@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -14,23 +13,64 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Save } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
+
+type UserProfile = {
+  name: string;
+  email: string;
+};
 
 export default function ProfileSettings() {
-  const [profile, setProfile] = useState({
-    fullName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-  });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res: { user?: UserProfile } = await apiFetch("/auth/user", {
+          method: "GET",
+        });
+        console.log(res)
+        if (res?.user) {
+          setProfile(res.user);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile", error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleSave = async () => {
+    if (!profile) return;
+
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    console.log("Profile updated:", profile);
+    try {
+      const res = await apiFetch("/auth/update", {
+        method: "PUT",
+        body: JSON.stringify({
+          name: profile.name,
+          email: profile.email,
+        }),
+      });
+
+      if (res.success) {
+        toast.success("✅ Profile updated successfully!");
+      }
+
+      if (!res.success) {
+        toast.error("❌ Failed to update profile. Please try again.");
+      }
+    } finally {
+      // Always reset the loading state
+      setIsLoading(false);
+    }
   };
+
+  if (!profile) {
+    return <div className="text-white">Loading profile...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -46,13 +86,13 @@ export default function ProfileSettings() {
           <div className="flex items-center gap-6">
             <Avatar className="h-20 w-20">
               <AvatarFallback className="bg-emerald-500 text-white text-lg">
-                {profile.fullName[0]}
-                {profile.fullName[1]}
+                {profile.name[0] ?? ""}
+                {profile.name[1] ?? ""}
               </AvatarFallback>
             </Avatar>
           </div>
 
-          {/* Name */}
+          {/* Name and Email */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-zinc-200">
@@ -60,14 +100,13 @@ export default function ProfileSettings() {
               </Label>
               <Input
                 id="fullName"
-                value={profile.fullName}
+                value={profile.name}
                 onChange={(e) =>
-                  setProfile({ ...profile, fullName: e.target.value })
+                  setProfile({ ...profile, name: e.target.value })
                 }
                 className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500"
               />
             </div>
-            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-zinc-200">
                 Email Address
@@ -84,6 +123,7 @@ export default function ProfileSettings() {
             </div>
           </div>
 
+          {/* Save Button */}
           <div className="flex justify-end">
             <Button
               onClick={handleSave}

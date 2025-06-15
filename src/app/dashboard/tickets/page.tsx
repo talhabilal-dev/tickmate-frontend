@@ -25,6 +25,12 @@ type Ticket = {
   description: string;
   status: string;
   createdAt: string;
+  priority: string;
+  helpfulNotes: string;
+  assignedTo?: {
+    _id: string;
+    name: string;
+  } | null;
   // add other fields as needed
 };
 
@@ -67,7 +73,9 @@ export default function TicketsPage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 48) return "1 day ago";
@@ -131,11 +139,17 @@ export default function TicketsPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex gap-2 mb-2">
-                    <Badge className={getStatusColor(ticket.status)}>{ticket.status}</Badge>
+                    <Badge className={getStatusColor(ticket.status)}>
+                      {ticket.status}
+                    </Badge>
                     <span className="text-xs text-zinc-500">{ticket._id}</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-1">{ticket.title}</h3>
-                  <p className="text-sm text-zinc-400 line-clamp-2">{ticket.description}</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">
+                    {ticket.title}
+                  </h3>
+                  <p className="text-sm text-zinc-400 line-clamp-2">
+                    {ticket.description}
+                  </p>
                   <div className="text-xs text-zinc-500 mt-2">
                     Created: {formatDate(ticket.createdAt)}
                   </div>
@@ -155,14 +169,27 @@ export default function TicketsPage() {
         </div>
 
         {filteredTickets.length === 0 && (
-          <div className="text-center py-12 text-zinc-500">No tickets found.</div>
+          <div className="text-center py-12 text-zinc-500">
+            No tickets found.
+          </div>
         )}
       </div>
 
       {/* Ticket Detail Modal */}
       {selectedTicket && (
         <TicketDetailModal
-          ticket={selectedTicket}
+          ticket={{
+            id: selectedTicket._id.toString(),
+            title: selectedTicket.title,
+            description: selectedTicket.description,
+            helpfulNotes: selectedTicket.helpfulNotes,
+            status: selectedTicket.status,
+            priority: selectedTicket.priority,
+            reporter: (selectedTicket as any).reporter ?? "",
+            assignedTo: (selectedTicket as any).assignedTo ?? null,
+            createdAt: selectedTicket.createdAt,
+            updatedAt: (selectedTicket as any).updatedAt ?? "",
+          }}
           isOpen={!!selectedTicket}
           onClose={() => setSelectedTicket(null)}
         />
