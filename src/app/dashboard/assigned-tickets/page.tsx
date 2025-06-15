@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import DashboardLayout from "@/components/dashboard-layout";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +24,6 @@ import {
   XCircle,
   Send,
   Ticket,
-  
   Eye,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -76,7 +74,7 @@ const statusIcons = {
   closed: XCircle,
 };
 
-export default function MyTicketsPage() {
+export default function AssignedTickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
@@ -205,32 +203,57 @@ export default function MyTicketsPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="space-y-6 bg-zinc-950">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-white">My Tickets</h1>
+        <div className="space-y-6">
+          {/* Header Skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="h-9 w-48 bg-zinc-700 rounded animate-pulse"></div>
+            <div className="h-6 w-32 bg-zinc-700 rounded animate-pulse"></div>
           </div>
-          <div className="grid gap-2 grid-cols-2">
-            {[1, 2].map((i) => (
+
+          {/* Ticket Cards Skeleton */}
+          <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+            {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="bg-zinc-900 border-zinc-800">
-                <CardContent className="p-6">
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-4 bg-zinc-700 rounded w-3/4"></div>
-                    <div className="h-3 bg-zinc-700 rounded w-1/2"></div>
-                    <div className="h-3 bg-zinc-700 rounded w-1/4"></div>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="h-6 bg-zinc-700 rounded w-3/4 animate-pulse"></div>
+                      <div className="flex items-center gap-3">
+                        <div className="h-4 bg-zinc-700 rounded w-32 animate-pulse"></div>
+                        <div className="h-4 bg-zinc-700 rounded w-24 animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-16 bg-zinc-700 rounded animate-pulse"></div>
+                      <div className="h-5 w-20 bg-zinc-700 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2 mb-4">
+                    <div className="h-4 bg-zinc-700 rounded w-full animate-pulse"></div>
+                    <div className="h-4 bg-zinc-700 rounded w-2/3 animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-3 bg-zinc-700 rounded w-20 animate-pulse"></div>
+                      <div className="h-3 bg-zinc-700 rounded w-24 animate-pulse"></div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-16 bg-zinc-700 rounded animate-pulse"></div>
+                      <div className="h-8 w-16 bg-zinc-700 rounded animate-pulse"></div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">My Tickets</h1>
@@ -273,7 +296,6 @@ export default function MyTicketsPage() {
                         {ticket.priority}
                       </Badge>
                       <Badge className={statusColors[ticket.status]}>
-                     
                         {ticket.status}
                       </Badge>
                     </div>
@@ -410,12 +432,13 @@ export default function MyTicketsPage() {
             assignedTo: (viewTicket as any).assignedTo ?? null,
             createdAt: viewTicket.createdAt,
             updatedAt: (viewTicket as any).updatedAt ?? "",
+            relatedSkills: (viewTicket as any).relatedSkills ?? [],
             canChangeStatus: false,
           }}
           isOpen={!!viewTicket}
           onClose={() => setViewTicket(null)}
         />
       )}
-    </DashboardLayout>
+    </>
   );
 }

@@ -35,7 +35,7 @@ export default function StatsCard({ title, value, change, icon, color, delay = 0
               <TrendingDown className="h-4 w-4 text-red-400 mr-1" />
             )}
             <span className={`text-sm font-medium ${isPositive ? "text-emerald-400" : "text-red-400"}`}>{change}</span>
-            <span className="text-sm text-zinc-500 ml-1">from last month</span>
+            <span className="text-sm text-zinc-500 ml-1">from last 7 days</span>
           </div>
         </CardContent>
       </Card>

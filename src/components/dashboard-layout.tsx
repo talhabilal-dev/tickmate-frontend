@@ -41,8 +41,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
-    { name: "My Tickets", href: "/dashboard/assigned-tickets", icon: Ticket },
+    { name: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
+    { name: "Assigned Tickets", href: "/dashboard/assigned-tickets", icon: Ticket },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 

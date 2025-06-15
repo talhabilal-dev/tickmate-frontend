@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DashboardLayout from "@/components/dashboard-layout";
 import ProfileSettings from "@/components/settings/profile-settings";
 import SkillsSettings from "@/components/settings/skills-settings";
 import SecuritySettings from "@/components/settings/security-settings";
@@ -18,7 +17,6 @@ export default function SettingsPage() {
   ];
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -60,6 +58,5 @@ export default function SettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
   );
 }

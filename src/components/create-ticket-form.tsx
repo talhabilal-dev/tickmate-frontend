@@ -109,7 +109,7 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
             <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-700">
+            <SelectContent className="bg-zinc-900 text-white border-zinc-700">
               <SelectItem value="frontend">Frontend</SelectItem>
               <SelectItem value="backend">Backend</SelectItem>
               <SelectItem value="mobile">Mobile App</SelectItem>
@@ -127,7 +127,7 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
           type="button"
           variant="outline"
           onClick={onClose}
-          className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+          className="border-zinc-700 text-zinc-800 hover:text-white hover:bg-zinc-800"
         >
           Cancel
         </Button>

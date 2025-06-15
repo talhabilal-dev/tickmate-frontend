@@ -10,15 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Clock, User, Edit, CheckCircle, AlertCircle } from "lucide-react";
-import { Toggle } from "./ui/toggle";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 
@@ -35,6 +27,7 @@ interface TicketDetailModalProps {
       _id: string;
       name: string;
     } | null;
+    relatedSkills: string[];
     createdAt: string;
     updatedAt: string;
     canChangeStatus: boolean;
@@ -334,6 +327,19 @@ export default function TicketDetailModal({
                       Unassigned
                     </Badge>
                   )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-zinc-400">Related Skills</span>
+                  {ticket.relatedSkills.map((skill : string, index : number) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className={getPriorityColor(skill) + " text-sm"}
+                    >
+                      {skill}
+                    </Badge>
+                  ))}
                 </div>
 
                 {/* Timestamps */}
