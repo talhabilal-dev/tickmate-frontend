@@ -1,4 +1,5 @@
 "use client";
+import TicketDetailModal from "@/components/ticket-detail-modal";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   MessageSquare,
   Clock,
   User,
@@ -31,8 +25,11 @@ import {
   XCircle,
   Send,
   Ticket,
+  
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 interface Reply {
   id: string;
@@ -44,7 +41,7 @@ interface Reply {
 }
 
 interface Ticket {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   status: "open" | "in-progress" | "resolved" | "closed";
@@ -53,6 +50,8 @@ interface Ticket {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  replies: Reply[];
+  helpfulNotes: string;
   category: string;
 }
 
@@ -86,53 +85,30 @@ export default function MyTicketsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [detailModal, setDetailModal] = useState(false);
+  const [viewTicket, setViewTicket] = useState<Ticket | null>(null);
 
   // Mock data - replace with actual API calls
   useEffect(() => {
-    const mockTickets: Ticket[] = [
-      {
-        id: "1",
-        title: "Login Issues with Mobile App",
-        description:
-          "Users are experiencing login failures on the mobile application. The error occurs after entering credentials.",
-        status: "in-progress",
-        priority: "high",
-        assignedTo: "John Doe",
-        createdBy: "Jane Smith",
-        createdAt: "2024-01-15T10:30:00Z",
-        updatedAt: "2024-01-15T14:20:00Z",
-        category: "Technical",
-      },
-      {
-        id: "2",
-        title: "Payment Gateway Integration",
-        description:
-          "Need to integrate new payment gateway for international transactions.",
-        status: "open",
-        priority: "medium",
-        assignedTo: "John Doe",
-        createdBy: "Mike Johnson",
-        createdAt: "2024-01-14T09:15:00Z",
-        updatedAt: "2024-01-14T09:15:00Z",
-        category: "Development",
-      },
-      {
-        id: "3",
-        title: "Database Performance Optimization",
-        description:
-          "Database queries are running slow during peak hours. Need optimization.",
-        status: "resolved",
-        priority: "urgent",
-        assignedTo: "John Doe",
-        createdBy: "Sarah Wilson",
-        createdAt: "2024-01-13T16:45:00Z",
-        updatedAt: "2024-01-15T11:30:00Z",
-        category: "Performance",
-      },
-    ];
+    const fetchData = async () => {
+      try {
+        const res = await apiFetch("/tickets/get-assigned", {
+          method: "GET",
+        });
+        if (res.success) {
+          setTickets(res?.tickets);
+        }
 
-    setTickets(mockTickets);
-    setIsLoading(false);
+        if (!res.success) {
+          toast.error("❌ Failed to fetch tickets. Please try again.");
+        }
+      } catch (error) {
+        toast.error("🚨 An unexpected error occurred.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const loadReplies = async (ticketId: string) => {
@@ -173,7 +149,7 @@ export default function MyTicketsPage() {
       // Mock API call - replace with actual API
       const newReply: Reply = {
         id: Date.now().toString(),
-        ticketId: selectedTicket.id,
+        ticketId: selectedTicket._id.toString(),
         message: replyMessage,
         author: "John Doe",
         createdAt: new Date().toISOString(),
@@ -182,10 +158,10 @@ export default function MyTicketsPage() {
 
       setReplies([...replies, newReply]);
 
-      // Update ticket status if changed
+      // // Update ticket status if changed
       if (replyStatus && replyStatus !== selectedTicket.status) {
         const updatedTickets = tickets.map((ticket) =>
-          ticket.id === selectedTicket.id
+          ticket._id.toString() === selectedTicket._id
             ? {
                 ...ticket,
                 status: replyStatus as Ticket["status"],
@@ -213,7 +189,7 @@ export default function MyTicketsPage() {
   const openReplyModal = (ticket: Ticket) => {
     setSelectedTicket(ticket);
     setReplyStatus(ticket.status);
-    loadReplies(ticket.id);
+    loadReplies(ticket._id.toString());
     setIsDialogOpen(true);
   };
 
@@ -229,25 +205,27 @@ export default function MyTicketsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-white">My Tickets</h1>
+      <DashboardLayout>
+        <div className="space-y-6 bg-zinc-950">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-white">My Tickets</h1>
+          </div>
+          <div className="grid gap-2 grid-cols-2">
+            {[1, 2].map((i) => (
+              <Card key={i} className="bg-zinc-900 border-zinc-800">
+                <CardContent className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-zinc-700 rounded w-3/4"></div>
+                    <div className="h-3 bg-zinc-700 rounded w-1/2"></div>
+                    <div className="h-3 bg-zinc-700 rounded w-1/4"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-        <div className="grid gap-2 grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-zinc-900 border-zinc-800">
-              <CardContent className="p-6">
-                <div className="animate-pulse space-y-4">
-                  <div className="h-4 bg-zinc-700 rounded w-3/4"></div>
-                  <div className="h-3 bg-zinc-700 rounded w-1/2"></div>
-                  <div className="h-3 bg-zinc-700 rounded w-1/4"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -270,7 +248,7 @@ export default function MyTicketsPage() {
 
             return (
               <Card
-                key={ticket.id}
+                key={ticket._id.toString()}
                 className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors"
               >
                 <CardHeader className="pb-3">
@@ -295,7 +273,7 @@ export default function MyTicketsPage() {
                         {ticket.priority}
                       </Badge>
                       <Badge className={statusColors[ticket.status]}>
-                        <StatusIcon className="h-3 w-3 mr-1" />
+                     
                         {ticket.status}
                       </Badge>
                     </div>
@@ -344,49 +322,6 @@ export default function MyTicketsPage() {
                             </div>
                           </div>
 
-                          {/* Previous Replies */}
-                          {replies.length > 0 && (
-                            <div className="space-y-3">
-                              <h3 className="font-medium text-white">
-                                Previous Replies
-                              </h3>
-                              <div className="max-h-60 overflow-y-auto space-y-3">
-                                {replies.map((reply) => (
-                                  <div
-                                    key={reply.id}
-                                    className={`p-3 rounded-lg ${
-                                      reply.isInternal
-                                        ? "bg-yellow-500/10 border border-yellow-500/20"
-                                        : "bg-zinc-800"
-                                    }`}
-                                  >
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className="text-sm font-medium text-white">
-                                        {reply.author}
-                                      </span>
-                                      <div className="flex items-center gap-2">
-                                        {reply.isInternal && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-yellow-400 border-yellow-500/20 text-xs"
-                                          >
-                                            Internal
-                                          </Badge>
-                                        )}
-                                        <span className="text-xs text-zinc-400">
-                                          {formatDate(reply.createdAt)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <p className="text-zinc-300 text-sm">
-                                      {reply.message}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
                           {/* Reply Form */}
                           <div className="space-y-4">
                             <div>
@@ -405,35 +340,11 @@ export default function MyTicketsPage() {
                               />
                             </div>
 
-                            <div>
-                              <Label htmlFor="status" className="text-white">
-                                Update Status (Optional)
-                              </Label>
-                              <Select
-                                value={replyStatus}
-                                onValueChange={setReplyStatus}
-                              >
-                                <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-zinc-800 border-zinc-700">
-                                  <SelectItem value="open">Open</SelectItem>
-                                  <SelectItem value="in-progress">
-                                    In Progress
-                                  </SelectItem>
-                                  <SelectItem value="resolved">
-                                    Resolved
-                                  </SelectItem>
-                                  <SelectItem value="closed">Closed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-
                             <div className="flex justify-end gap-3">
                               <Button
                                 variant="outline"
                                 onClick={() => setIsDialogOpen(false)}
-                                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                className="border-zinc-700 text-zinc-800 hover:text-white hover:bg-zinc-800"
                               >
                                 Cancel
                               </Button>
@@ -456,7 +367,16 @@ export default function MyTicketsPage() {
                         </div>
                       </DialogContent>
                     </Dialog>
-                  </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-zinc-400 hover:text-white"
+                      onClick={() => setViewTicket(ticket)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  </div>{" "}
                 </CardContent>
               </Card>
             );
@@ -477,6 +397,25 @@ export default function MyTicketsPage() {
           </Card>
         )}
       </div>
+      {viewTicket && (
+        <TicketDetailModal
+          ticket={{
+            id: viewTicket._id.toString(),
+            title: viewTicket.title,
+            description: viewTicket.description,
+            helpfulNotes: viewTicket.helpfulNotes,
+            status: viewTicket.status,
+            priority: viewTicket.priority,
+            reporter: (viewTicket as any).reporter ?? "",
+            assignedTo: (viewTicket as any).assignedTo ?? null,
+            createdAt: viewTicket.createdAt,
+            updatedAt: (viewTicket as any).updatedAt ?? "",
+            canChangeStatus: false,
+          }}
+          isOpen={!!viewTicket}
+          onClose={() => setViewTicket(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

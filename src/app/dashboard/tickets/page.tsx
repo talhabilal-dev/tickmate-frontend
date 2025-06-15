@@ -189,6 +189,7 @@ export default function TicketsPage() {
             assignedTo: (selectedTicket as any).assignedTo ?? null,
             createdAt: selectedTicket.createdAt,
             updatedAt: (selectedTicket as any).updatedAt ?? "",
+            canChangeStatus: true,
           }}
           isOpen={!!selectedTicket}
           onClose={() => setSelectedTicket(null)}

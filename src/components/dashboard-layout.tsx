@@ -43,8 +43,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
     { name: "My Tickets", href: "/dashboard/assigned-tickets", icon: Ticket },
-    { name: "Team", href: "/dashboard/team", icon: Users },
-    { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 

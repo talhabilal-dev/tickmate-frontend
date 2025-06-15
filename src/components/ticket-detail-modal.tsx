@@ -37,6 +37,7 @@ interface TicketDetailModalProps {
     } | null;
     createdAt: string;
     updatedAt: string;
+    canChangeStatus: boolean;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -271,18 +272,21 @@ export default function TicketDetailModal({
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-3">
-              {status.toLowerCase() !== "closed" && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleToggleResolved(ticket.id)}
-                  className="border-emerald-700 text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Mark as Resolved
-                </Button>
-              )}
-            </div>
+
+            {ticket.canChangeStatus && (
+              <div className="flex flex-wrap gap-3">
+                {status.toLowerCase() !== "closed" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleToggleResolved(ticket.id)}
+                    className="border-emerald-700 text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Mark as Resolved
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -293,7 +297,10 @@ export default function TicketDetailModal({
                 <CheckCircle className="h-4 w-4 text-zinc-400" />
                 Status
               </h4>
-              <Badge variant="outline" className={` text-md ${getStatusColor(status)}}`}>
+              <Badge
+                variant="outline"
+                className={` text-md ${getStatusColor(status)}}`}
+              >
                 {ticket.status}
               </Badge>
             </div>
@@ -306,8 +313,6 @@ export default function TicketDetailModal({
               </h4>
 
               <div className="space-y-4 text-sm">
-
-
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Assigned To</span>
                   {ticket.assignedTo ? (
