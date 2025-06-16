@@ -13,11 +13,12 @@ export default function AuthTabs() {
         </p>
       </div>
 
-      <Tabs defaultValue="signin" className="w-full">
+      <Tabs defaultValue="signin" className="w-full" id="">
         <TabsList className="grid w-full grid-cols-2 bg-zinc-900 border-zinc-800">
           <TabsTrigger
             value="signin"
             className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-zinc-400"
+            id="signin"
           >
             Sign In
           </TabsTrigger>

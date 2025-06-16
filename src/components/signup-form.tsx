@@ -14,36 +14,28 @@ import {
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 export default function SignupForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validate name
-    if (!name.trim()) {
-      setError("Full name is required.");
-      return;
-    }
+    // Validation
+    if (!name.trim()) return setError("Full name is required.");
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+    if (!emailRegex.test(email))
+      return setError("Please enter a valid email address.");
 
-    // Validate password
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
+    if (password.length < 8)
+      return setError("Password must be at least 8 characters.");
 
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
@@ -51,10 +43,9 @@ export default function SignupForm() {
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
-      setError(
+      return setError(
         "Password must include uppercase, lowercase, number, and special character."
       );
-      return;
     }
 
     try {
@@ -66,21 +57,21 @@ export default function SignupForm() {
       });
 
       if (!res.success) {
-        setError(res.message || "Registration failed. Try again.");
+        return setError(res.message || "Registration failed. Try again.");
       }
 
-      if (res.success) {
-        toast.success("Registration successful!");
-        //TODo
-      }
-    } catch (err: any) {
-      console.error("Signup failed:", err);
-      setError(err.message || "Registration failed. Try again.");
-    } finally {
+      // On success
+      toast.success("🎉 Registration successful!");
       setName("");
       setEmail("");
       setPassword("");
       setError(null);
+      router.push("/auth#signin");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Registration failed. Try again.");
+      toast.error("❌ Registration failed. Try again.");
+    } finally {
       setIsLoading(false);
     }
   };

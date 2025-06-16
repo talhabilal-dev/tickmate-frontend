@@ -58,7 +58,6 @@ export default function SigninForm() {
 
       const res = await apiFetch("/auth/login", {
         method: "POST",
-        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
@@ -71,7 +70,6 @@ export default function SigninForm() {
         setError(res.message);
       }
     } catch (err: any) {
-      console.error("Login failed:", err);
       setError("Invalid email or password.");
     } finally {
       setIsLoading(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -30,19 +30,33 @@ import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter, usePathname } from "next/navigation";
 
+// Define UserType interface (customize fields as needed)
+interface UserType {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl?: string;
+}
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<UserType | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
-    { name: "Assigned Tickets", href: "/dashboard/assigned-tickets", icon: Ticket },
+    {
+      name: "Assigned Tickets",
+      href: "/dashboard/assigned-tickets",
+      icon: Ticket,
+    },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
@@ -65,6 +79,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       toast.error("🚨 An unexpected error occurred.");
     }
   };
+
+  useEffect(() => {
+    const getUser = async () => {
+      const res = await apiFetch("/auth/user", {
+        method: "GET",
+      });
+
+      if (!res.success) {
+        router.push("/auth");
+      }
+
+      if (res.success) {
+        setUser(res.user);
+      }
+    };
+
+    getUser();
+  }, []);
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -189,15 +221,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Menu className="h-5 w-5" />
             </Button>
 
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-zinc-400 hover:text-white"
-              >
-                <Bell className="h-5 w-5" />
+            {user?.role === "admin" && (
+              <Button onClick={() => router.push("/admin")} variant="ghost" className="text-zinc-800 bg-zinc-200 hover:text-white hover:bg-zinc-900">
+                Admin Dashboard
               </Button>
+            )}
 
+            <div className="flex items-center space-x-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -210,7 +240,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         alt="User"
                       />
                       <AvatarFallback className="bg-emerald-500 text-white">
-                        JD
+                        {user?.name?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -223,22 +253,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-white">
-                        John Doe
+                        {user?.name}
                       </p>
                       <p className="text-xs leading-none text-zinc-400">
-                        john@example.com
+                        {user?.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-zinc-800" />
-                  <DropdownMenuItem className="text-zinc-300 hover:bg-zinc-800 hover:text-white">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-zinc-300 hover:bg-zinc-800 hover:text-white">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-zinc-800" />
                   <DropdownMenuItem
                     className="text-zinc-300 hover:bg-zinc-800 hover:text-white"

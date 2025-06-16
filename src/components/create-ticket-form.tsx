@@ -22,17 +22,10 @@ interface CreateTicketFormProps {
 
 export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
   const [title, setTitle] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("");
   const [category, setCategory] = useState("");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSkillToggle = (skill: string) => {
-    setSelectedSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +38,7 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
           title,
           description,
           category,
+          deadline,
         }),
       });
 
@@ -55,7 +49,7 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
         setTitle("");
         setDescription("");
         setCategory("");
-        setSelectedSkills([]);
+        setDeadline("");
 
         onClose(); // Close modal
       } else {
@@ -119,6 +113,18 @@ export default function CreateTicketForm({ onClose }: CreateTicketFormProps) {
               <SelectItem value="security">Security</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="deadline" className="text-zinc-200">
+            Deadline
+          </Label>
+          <Input
+            id="deadline"
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-emerald-500"
+          />
         </div>
       </div>
 
