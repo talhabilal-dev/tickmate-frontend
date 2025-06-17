@@ -12,33 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Home,
-  Ticket,
-  Users,
-  Settings,
-  BarChart3,
-  Menu,
-  X,
-  LogOut,
-  User,
-  Bell,
-} from "lucide-react";
+import { Home, Ticket, Settings, Menu, X, LogOut } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter, usePathname } from "next/navigation";
 
-// Define UserType interface (customize fields as needed)
-interface UserType {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatarUrl?: string;
-}
-
+import { UserType } from "@/types";
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
@@ -222,7 +203,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
 
             {user?.role === "admin" && (
-              <Button onClick={() => router.push("/admin")} variant="ghost" className="text-zinc-800 bg-zinc-200 hover:text-white hover:bg-zinc-900">
+              <Button
+                onClick={() => router.push("/admin")}
+                variant="ghost"
+                className="text-zinc-800 bg-zinc-200 hover:text-white hover:bg-zinc-900"
+              >
                 Admin Dashboard
               </Button>
             )}

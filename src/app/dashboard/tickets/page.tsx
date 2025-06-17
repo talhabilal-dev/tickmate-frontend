@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -10,79 +10,59 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Plus, Search, Eye } from "lucide-react"
-import CreateTicketForm from "@/components/create-ticket-form"
-import TicketDetailModal from "@/components/ticket-detail-modal"
-import { motion } from "framer-motion"
-import { apiFetch } from "@/lib/api"
-import { Badge } from "@/components/ui/badge"
-
-type Ticket = {
-  _id: string
-  title: string
-  description: string
-  status: string
-  createdAt: string
-  priority: string
-  helpfulNotes: string
-  assignedTo?: {
-    _id: string
-    name: string
-  } | null
-  // add other fields as needed
-}
+} from "@/components/ui/dialog";
+import { Plus, Search, Eye } from "lucide-react";
+import CreateTicketForm from "@/components/create-ticket-form";
+import TicketDetailModal from "@/components/ticket-detail-modal";
+import { motion } from "framer-motion";
+import { apiFetch } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+import { formatDateTime } from "@/lib/dateTimeFormatter";
+import { Ticket } from "@/types";
 
 export default function TicketsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
-  const [createTicketOpen, setCreateTicketOpen] = useState(false)
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [createTicketOpen, setCreateTicketOpen] = useState(false);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTickets = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const response = await apiFetch("/tickets")
+        const response = await apiFetch("/tickets");
         if (response.success) {
-          setTickets(response.tickets)
+          setTickets(response.tickets);
         }
       } catch (error) {
-        console.error("Failed to fetch tickets:", error)
+        console.error("Failed to fetch tickets:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    fetchTickets()
-  }, [])
+    };
+    fetchTickets();
+  }, []);
 
   const filteredTickets = tickets.filter((ticket) =>
-    [ticket.title, ticket.description, ticket._id].join(" ").toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+    [ticket.title, ticket.description, ticket._id]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "open":
-        return "bg-amber-500/10 text-amber-400 border-amber-500/20"
+        return "bg-amber-500/10 text-amber-400 border-amber-500/20";
       case "in_progress":
-        return "bg-blue-500/10 text-blue-400 border-blue-500/20"
+        return "bg-blue-500/10 text-blue-400 border-blue-500/20";
       case "resolved":
-        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
       default:
-        return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+        return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    if (diffInHours < 1) return "Just now"
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 48) return "1 day ago"
-    return `${Math.floor(diffInHours / 24)} days ago`
-  }
+  };
 
   return (
     <>
@@ -136,7 +116,10 @@ export default function TicketsPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 animate-pulse">
+              <div
+                key={index}
+                className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 animate-pulse"
+              >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex gap-2 mb-2">
@@ -168,12 +151,22 @@ export default function TicketsPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex gap-2 mb-2">
-                      <Badge className={getStatusColor(ticket.status)}>{ticket.status}</Badge>
-                      <span className="text-xs text-zinc-500">{ticket._id}</span>
+                      <Badge className={getStatusColor(ticket.status)}>
+                        {ticket.status}
+                      </Badge>
+                      <span className="text-xs text-zinc-500">
+                        {ticket._id}
+                      </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-1">{ticket.title}</h3>
-                    <p className="text-sm text-zinc-400 line-clamp-2">{ticket.description}</p>
-                    <div className="text-xs text-zinc-500 mt-2">Created: {formatDate(ticket.createdAt)}</div>
+                    <h3 className="text-lg font-semibold text-white mb-1">
+                      {ticket.title}
+                    </h3>
+                    <p className="text-sm text-zinc-400 line-clamp-2">
+                      {ticket.description}
+                    </p>
+                    <div className="text-xs text-zinc-500 mt-2">
+                      Created: {formatDateTime(ticket.createdAt)}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
@@ -191,7 +184,9 @@ export default function TicketsPage() {
         )}
 
         {!isLoading && filteredTickets.length === 0 && (
-          <div className="text-center py-12 text-zinc-500">No tickets found.</div>
+          <div className="text-center py-12 text-zinc-500">
+            No tickets found.
+          </div>
         )}
       </div>
 
@@ -217,5 +212,5 @@ export default function TicketsPage() {
         />
       )}
     </>
-  )
+  );
 }

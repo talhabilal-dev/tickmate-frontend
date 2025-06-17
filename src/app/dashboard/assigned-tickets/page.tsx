@@ -28,30 +28,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { formatDateTime } from "@/lib/dateTimeFormatter";
 
-interface Reply {
-  id: string;
-  ticketId: string;
-  message: string;
-  author: string;
-  createdAt: string;
-  isInternal: boolean;
-}
-
-interface Ticket {
-  _id: string;
-  title: string;
-  description: string;
-  status: "open" | "in-progress" | "resolved" | "closed";
-  priority: "low" | "medium" | "high" | "urgent";
-  assignedTo: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  replies: Reply[];
-  helpfulNotes: string;
-  category: string;
-}
+import { Ticket as TicketType, Reply } from "@/types";
 
 const statusColors = {
   open: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -75,8 +54,8 @@ const statusIcons = {
 };
 
 export default function AssignedTickets() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [tickets, setTickets] = useState<TicketType[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<TicketType | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [replyMessage, setReplyMessage] = useState("");
   const [replyStatus, setReplyStatus] = useState<string>("");
@@ -84,7 +63,7 @@ export default function AssignedTickets() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
-  const [viewTicket, setViewTicket] = useState<Ticket | null>(null);
+  const [viewTicket, setViewTicket] = useState<TicketType | null>(null);
 
   // Mock data - replace with actual API calls
   useEffect(() => {
@@ -117,18 +96,14 @@ export default function AssignedTickets() {
         ticketId,
         message:
           "I've started investigating this issue. Initial analysis shows it might be related to the authentication service.",
-        author: "John Doe",
         createdAt: "2024-01-15T11:00:00Z",
-        isInternal: false,
       },
       {
         id: "2",
         ticketId,
         message:
           "Found the root cause. The session timeout was set too low. Working on a fix.",
-        author: "John Doe",
         createdAt: "2024-01-15T13:30:00Z",
-        isInternal: true,
       },
     ];
 
@@ -149,9 +124,8 @@ export default function AssignedTickets() {
         id: Date.now().toString(),
         ticketId: selectedTicket._id.toString(),
         message: replyMessage,
-        author: "John Doe",
+
         createdAt: new Date().toISOString(),
-        isInternal: false,
       };
 
       setReplies([...replies, newReply]);
@@ -162,7 +136,7 @@ export default function AssignedTickets() {
           ticket._id.toString() === selectedTicket._id
             ? {
                 ...ticket,
-                status: replyStatus as Ticket["status"],
+                status: replyStatus as TicketType["status"],
                 updatedAt: new Date().toISOString(),
               }
             : ticket
@@ -170,7 +144,7 @@ export default function AssignedTickets() {
         setTickets(updatedTickets);
         setSelectedTicket({
           ...selectedTicket,
-          status: replyStatus as Ticket["status"],
+          status: replyStatus as TicketType["status"],
         });
       }
 
@@ -184,71 +158,61 @@ export default function AssignedTickets() {
     }
   };
 
-  const openReplyModal = (ticket: Ticket) => {
+  const openReplyModal = (ticket: TicketType) => {
     setSelectedTicket(ticket);
     setReplyStatus(ticket.status);
     loadReplies(ticket._id.toString());
     setIsDialogOpen(true);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   if (isLoading) {
     return (
-        <div className="space-y-6">
-          {/* Header Skeleton */}
-          <div className="flex items-center justify-between">
-            <div className="h-9 w-48 bg-zinc-700 rounded animate-pulse"></div>
-            <div className="h-6 w-32 bg-zinc-700 rounded animate-pulse"></div>
-          </div>
-
-          {/* Ticket Cards Skeleton */}
-          <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2 flex-1">
-                      <div className="h-6 bg-zinc-700 rounded w-3/4 animate-pulse"></div>
-                      <div className="flex items-center gap-3">
-                        <div className="h-4 bg-zinc-700 rounded w-32 animate-pulse"></div>
-                        <div className="h-4 bg-zinc-700 rounded w-24 animate-pulse"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-5 w-16 bg-zinc-700 rounded animate-pulse"></div>
-                      <div className="h-5 w-20 bg-zinc-700 rounded animate-pulse"></div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 mb-4">
-                    <div className="h-4 bg-zinc-700 rounded w-full animate-pulse"></div>
-                    <div className="h-4 bg-zinc-700 rounded w-2/3 animate-pulse"></div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-3 bg-zinc-700 rounded w-20 animate-pulse"></div>
-                      <div className="h-3 bg-zinc-700 rounded w-24 animate-pulse"></div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-16 bg-zinc-700 rounded animate-pulse"></div>
-                      <div className="h-8 w-16 bg-zinc-700 rounded animate-pulse"></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="h-9 w-48 bg-zinc-700 rounded animate-pulse"></div>
+          <div className="h-6 w-32 bg-zinc-700 rounded animate-pulse"></div>
         </div>
+
+        {/* Ticket Cards Skeleton */}
+        <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="bg-zinc-900 border-zinc-800">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2 flex-1">
+                    <div className="h-6 bg-zinc-700 rounded w-3/4 animate-pulse"></div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-4 bg-zinc-700 rounded w-32 animate-pulse"></div>
+                      <div className="h-4 bg-zinc-700 rounded w-24 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-16 bg-zinc-700 rounded animate-pulse"></div>
+                    <div className="h-5 w-20 bg-zinc-700 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2 mb-4">
+                  <div className="h-4 bg-zinc-700 rounded w-full animate-pulse"></div>
+                  <div className="h-4 bg-zinc-700 rounded w-2/3 animate-pulse"></div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="h-3 bg-zinc-700 rounded w-20 animate-pulse"></div>
+                    <div className="h-3 bg-zinc-700 rounded w-24 animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-16 bg-zinc-700 rounded animate-pulse"></div>
+                    <div className="h-8 w-16 bg-zinc-700 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -287,7 +251,7 @@ export default function AssignedTickets() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {formatDate(ticket.createdAt)}
+                          {formatDateTime(ticket.createdAt)}
                         </div>
                       </div>
                     </div>
@@ -308,7 +272,7 @@ export default function AssignedTickets() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 text-xs text-zinc-500">
                       <span>Category: {ticket.category}</span>
-                      <span>Updated: {formatDate(ticket.updatedAt)}</span>
+                      <span>Updated: {formatDateTime(ticket.updatedAt)}</span>
                     </div>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <DialogTrigger asChild>

@@ -13,29 +13,9 @@ import {
 import { Clock, User, Edit, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { formatDateTime } from "@/lib/dateTimeFormatter";
 
-interface TicketDetailModalProps {
-  ticket: {
-    id: string;
-    title: string;
-    description: string;
-    helpfulNotes: string;
-    status: string;
-    priority: string;
-    reporter: string;
-    assignedTo?: {
-      _id: string;
-      name: string;
-    } | null;
-    relatedSkills: string[];
-    createdAt: string;
-    updatedAt: string;
-    canChangeStatus: boolean;
-  };
-  isOpen: boolean;
-  onClose: () => void;
-}
-
+import { TicketDetailModalProps } from "@/types";
 export default function TicketDetailModal({
   ticket,
   isOpen,
@@ -114,16 +94,6 @@ export default function TicketDetailModal({
       default:
         return null;
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getInitials = (name: string) => {
@@ -331,7 +301,7 @@ export default function TicketDetailModal({
 
                 <div className="flex flex-wrap gap-2">
                   <span className="text-zinc-400">Related Skills</span>
-                  {ticket.relatedSkills.map((skill : string, index : number) => (
+                  {ticket.relatedSkills.map((skill: string, index: number) => (
                     <Badge
                       key={index}
                       variant="outline"
@@ -350,7 +320,7 @@ export default function TicketDetailModal({
                       <span className="text-zinc-400">Created</span>
                     </div>
                     <span className="text-white text-xs font-mono">
-                      {formatDate(ticket.createdAt)}
+                      {formatDateTime(ticket.createdAt)}
                     </span>
                   </div>
 
@@ -360,7 +330,7 @@ export default function TicketDetailModal({
                       <span className="text-zinc-400">Updated</span>
                     </div>
                     <span className="text-white text-xs font-mono">
-                      {formatDate(ticket.updatedAt)}
+                      {formatDateTime(ticket.updatedAt)}
                     </span>
                   </div>
                 </div>

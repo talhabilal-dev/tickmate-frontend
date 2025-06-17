@@ -30,6 +30,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,54 +65,20 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import {
+  StatCardSkeleton,
+  TableSkeleton,
+  FiltersSkeleton,
+} from "@/components/skeletons/admin-dashboard/skeleton";
 
-// Types
-type UserRole = "admin" | "moderator" | "user";
-type TicketStatus = "open" | "in_progress" | "completed" | "closed";
-type TicketPriority = "low" | "medium" | "high" | "urgent";
-
-interface UserType {
-  _id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  skills: string[];
-  createdAt: string;
-  lastLogin: string;
-  isActive: boolean;
-}
-
-interface TicketType {
-  _id: string;
-  title: string;
-  description: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  category: string;
-  deadline: string;
-  createdBy: {
-    _id: string;
-    name: string;
-  };
-  assignedTo: {
-    _id: string;
-    name: string;
-  };
-  helpfulNotes: string;
-  relatedSkills: string[];
-  reply: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Current logged in user (mock)
-const currentUser = {
-  id: "1",
-  name: "John Doe",
-  email: "john@example.com",
-  role: "admin" as UserRole,
-  initials: "JD",
-};
+import {
+  UserType,
+  TicketType,
+  UserRole,
+  TicketPriority,
+  TicketStatus,
+} from "@/types";
+import { formatDate, formatDateTime } from "@/lib/dateTimeFormatter";
 
 const statusColors = {
   open: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -128,63 +95,13 @@ const priorityColors = {
 };
 
 const roleColors = {
-  admin: "bg-red-500/10 text-red-400 border-red-500/20",
+  admin: "bg-emerald-900/10 text-emerald-400 border-emerald-500/20",
   moderator: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  user: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  user: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
 };
 
-// Skeleton Components
-const StatCardSkeleton = () => (
-  <Card className="bg-zinc-900 border-zinc-800">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <Skeleton className="h-4 w-20 bg-zinc-800" />
-      <Skeleton className="h-4 w-4 bg-zinc-800" />
-    </CardHeader>
-    <CardContent>
-      <Skeleton className="h-8 w-12 bg-zinc-800 mb-1" />
-      <Skeleton className="h-3 w-24 bg-zinc-800" />
-    </CardContent>
-  </Card>
-);
-
-const TableSkeleton = ({ rows = 5 }: { rows?: number }) => (
-  <div className="rounded-md border border-zinc-800 overflow-hidden">
-    <Table>
-      <TableHeader>
-        <TableRow className="border-zinc-800">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <TableHead key={i}>
-              <Skeleton className="h-4 w-20 bg-zinc-800" />
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {Array.from({ length: rows }).map((_, i) => (
-          <TableRow key={i} className="border-zinc-800">
-            {Array.from({ length: 8 }).map((_, j) => (
-              <TableCell key={j}>
-                <Skeleton className="h-4 w-full bg-zinc-800" />
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </div>
-);
-
-const FiltersSkeleton = () => (
-  <div className="flex flex-col sm:flex-row gap-4">
-    <div className="relative flex-1">
-      <Skeleton className="h-10 w-full bg-zinc-800" />
-    </div>
-    <Skeleton className="h-10 w-full sm:w-[180px] bg-zinc-800" />
-    <Skeleton className="h-10 w-full sm:w-[180px] bg-zinc-800" />
-  </div>
-);
-
 export default function Dashboard() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -205,6 +122,7 @@ export default function Dashboard() {
   const [ticketSearchTerm, setTicketSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [isUserSaving, setIsUserSaving] = useState(false);
 
   // User filters
   const [userSearchTerm, setUserSearchTerm] = useState("");
@@ -238,9 +156,6 @@ export default function Dashboard() {
 
     loadData();
   }, []);
-
-  const getUserById = (id: string) =>
-    users.find((user) => user._id.toString() === id);
 
   const filteredTickets = useMemo(() => {
     if (isLoading) return [];
@@ -281,24 +196,6 @@ export default function Dashboard() {
     totalTickets: totalTickets,
     completedTickets: completedTickets,
     inProgressTickets: inProgressTickets,
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   // Ticket functions
@@ -360,27 +257,61 @@ export default function Dashboard() {
     setEditingUser({ ...user });
   };
 
-  const handleSaveUserEdit = () => {
+  const handleSaveUserEdit = async () => {
     if (!editingUser) return;
+    setIsUserSaving(true);
 
-    setUsers((prev) =>
-      prev.map((user) =>
-        user._id.toString() === editingUser._id.toString() ? editingUser : user
-      )
-    );
-    setEditingUser(null);
+    try {
+      const response = await apiFetch(`/admin/update-user`, {
+        method: "PUT",
+        body: JSON.stringify(editingUser),
+      });
 
-    if (typeof window !== "undefined") {
-      alert("User updated successfully!");
+      if (!response.success) {
+        toast.error("❌ Failed to update user. Please try again.");
+        return;
+      }
+
+      toast.success("✅ User updated successfully!");
+
+      const updatedUser = response.user;
+
+      setUsers((prev) =>
+        prev.map((user) =>
+          user._id.toString() === editingUser._id.toString()
+            ? updatedUser
+            : user
+        )
+      );
+
+      setEditingUser(null);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Something went wrong while updating the user.");
+    } finally {
+      setIsUserSaving(false);
     }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    setUsers((prev) => prev.filter((user) => user._id.toString() !== userId));
-    setDeleteUserId(null);
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const res = await apiFetch("/admin/delete-user", {
+        method: "DELETE",
+        body: JSON.stringify({ userId }),
+      });
 
-    if (typeof window !== "undefined") {
-      toast.success("User deleted successfully!");
+      if (!res.success) {
+        toast.error(res.message || "❌ Could not delete user.");
+        throw new Error(res.message || "Failed to delete user.");
+      }
+
+      // Only update UI after confirmed success
+      setUsers((prev) => prev.filter((user) => user._id.toString() !== userId));
+      setDeleteUserId(null);
+      toast.success("🗑️ User deleted successfully!");
+    } catch (err: any) {
+      console.error("Error deleting user:", err);
+      toast.error(err.message || "❌ Could not delete user.");
     }
   };
 
@@ -401,13 +332,23 @@ export default function Dashboard() {
     setEditingUser((prev) => (prev ? { ...prev, skills: skillsArray } : null));
   };
 
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      const confirmed = confirm("Are you sure you want to logout?");
-      if (confirmed) {
-        alert("Logged out successfully!");
-        // In a real app, you would redirect to login page or clear auth tokens
+  const handleLogout = async () => {
+    try {
+      const res = await apiFetch("/auth/logout", {
+        method: "POST",
+      });
+
+      if (res.success) {
+        toast.success("✅ Signed out successfully!");
+        router.push("/auth");
       }
+
+      if (!res.success) {
+        toast.error("❌ Failed to sign out. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+      toast.error("❌ Failed to sign out. Please try again.");
     }
   };
 
@@ -918,7 +859,7 @@ export default function Dashboard() {
                                 </div>
                               </TableCell>
                               <TableCell className="text-zinc-300">
-                                {formatDateTime(user.lastLogin)}
+                                {formatDateTime(user.loginTime)}
                               </TableCell>
                               <TableCell className="text-zinc-300">
                                 {formatDate(user.createdAt)}
@@ -1139,7 +1080,7 @@ export default function Dashboard() {
                   <div>
                     <span className="text-zinc-400">Last Login:</span>
                     <p className="text-zinc-100 font-medium">
-                      {formatDateTime(selectedUser.lastLogin)}
+                      {formatDateTime(selectedUser.loginTime)}
                     </p>
                   </div>
                 </div>
@@ -1394,7 +1335,7 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <Label htmlFor="userName" className="text-zinc-300">
+                    <Label htmlFor="userName" className="text-zinc-300 pb-2">
                       Name
                     </Label>
                     <Input
@@ -1403,12 +1344,12 @@ export default function Dashboard() {
                       onChange={(e) =>
                         handleUserInputChange("name", e.target.value)
                       }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
+                      className="bg-zinc-800 border-zinc-700 text-zinc-100 pb-2"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="userEmail" className="text-zinc-300">
+                    <Label htmlFor="userEmail" className="text-zinc-300 pb-2">
                       Email
                     </Label>
                     <Input
@@ -1424,7 +1365,7 @@ export default function Dashboard() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="userRole" className="text-zinc-300">
+                      <Label htmlFor="userRole" className="text-zinc-300 pb-2">
                         Role
                       </Label>
                       <Select
@@ -1436,7 +1377,7 @@ export default function Dashboard() {
                         <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white pb-2">
                           <SelectItem value="admin">Admin</SelectItem>
                           <SelectItem value="moderator">Moderator</SelectItem>
                           <SelectItem value="user">User</SelectItem>
@@ -1445,7 +1386,10 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <Label htmlFor="userStatus" className="text-zinc-300">
+                      <Label
+                        htmlFor="userStatus"
+                        className="text-zinc-300 pb-2"
+                      >
                         Status
                       </Label>
                       <Select
@@ -1457,7 +1401,7 @@ export default function Dashboard() {
                         <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white pb-2">
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="inactive">Inactive</SelectItem>
                         </SelectContent>
@@ -1466,7 +1410,7 @@ export default function Dashboard() {
                   </div>
 
                   <div>
-                    <Label htmlFor="userSkills" className="text-zinc-300">
+                    <Label htmlFor="userSkills" className="text-zinc-300 pb-2">
                       Skills (comma-separated)
                     </Label>
                     <Input
@@ -1491,9 +1435,32 @@ export default function Dashboard() {
               </Button>
               <Button
                 onClick={handleSaveUserEdit}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={isUserSaving}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
               >
-                Save Changes
+                {isUserSaving && (
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    ></path>
+                  </svg>
+                )}
+                {isUserSaving ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -7,7 +7,7 @@ export async function apiFetch(
 ) {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
-    credentials, // ✅ Correct placement
+    credentials,
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
