@@ -171,7 +171,7 @@ export default function TicketsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-zinc-400 hover:text-white"
+                    className="text-zinc-400 hover:text-zinc-800"
                     onClick={() => setSelectedTicket(ticket)}
                   >
                     <Eye className="h-4 w-4 mr-1" />

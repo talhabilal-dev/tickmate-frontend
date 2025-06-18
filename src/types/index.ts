@@ -30,7 +30,7 @@ export interface TicketType {
   };
   helpfulNotes: string;
   relatedSkills: string[];
-  reply: string;
+  replies: Reply[];
   createdAt: string;
   updatedAt: string;
 }
@@ -40,12 +40,13 @@ export interface Ticket {
   _id: string;
   title: string;
   description: string;
-  status: "open" | "in-progress" | "resolved" | "closed";
+  status: "open" | "in_progress" | "closed";
   priority: "low" | "medium" | "high" | "urgent";
   assignedTo: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  reply: string;
   replies: Reply[];
   skills: string[];
   helpfulNotes: string;
@@ -53,12 +54,15 @@ export interface Ticket {
 }
 
 export interface Reply {
-  id: string;
-  ticketId: string;
+  _id: string;
   message: string;
   createdAt: string;
+  createdBy: {
+    _id: string;
+    name: string;
+    email?: string; // optional if you populate it
+  };
 }
-
 
 export interface TicketDetailModalProps {
   ticket: {
@@ -73,6 +77,7 @@ export interface TicketDetailModalProps {
       _id: string;
       name: string;
     } | null;
+
     relatedSkills: string[];
     createdAt: string;
     updatedAt: string;

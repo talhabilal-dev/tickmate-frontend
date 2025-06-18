@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -79,26 +78,7 @@ import {
   TicketStatus,
 } from "@/types";
 import { formatDate, formatDateTime } from "@/lib/dateTimeFormatter";
-
-const statusColors = {
-  open: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  in_progress: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  closed: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-};
-
-const priorityColors = {
-  low: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-  medium: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  high: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  urgent: "bg-red-500/10 text-red-400 border-red-500/20",
-};
-
-const roleColors = {
-  admin: "bg-emerald-900/10 text-emerald-400 border-emerald-500/20",
-  moderator: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  user: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-};
+import { statusColors, priorityColors, roleColors } from "@/lib/colors";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -136,7 +116,6 @@ export default function Dashboard() {
         method: "GET",
       });
 
-      console.log(res);
       if (!res.success) {
         toast.error("❌ Failed to fetch tickets. Please try again.");
         return;
@@ -225,14 +204,27 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteTicket = (ticketId: string) => {
-    setTickets((prev) =>
-      prev.filter((ticket) => ticket._id.toString() !== ticketId)
-    );
-    setDeleteTicketId(null);
+  const handleDeleteTicket = async (ticketId: string) => {
+    try {
+      const res = await apiFetch("/tickets/delete-ticket", {
+        method: "DELETE",
+        body: JSON.stringify({ ticketId }),
+      });
 
-    if (typeof window !== "undefined") {
-      toast.success("Ticket deleted successfully!");
+      if (!res.success) {
+        toast.error("❌ Failed to delete ticket.");
+        throw new Error(`Failed to delete ticket: ${res.status}`);
+      }
+
+      if (res.success) {
+        toast.success("🗑️ Ticket deleted successfully!");
+        setDeleteTicketId(null);
+      }
+
+      // Optionally refetch tickets or update UI
+    } catch (error) {
+      toast.error("❌ Failed to delete ticket.");
+      console.error("Error deleting ticket:", error);
     }
   };
 
@@ -367,73 +359,68 @@ export default function Dashboard() {
           </div>
 
           {/* Profile Dropdown */}
-          {isLoading ? (
-            <Skeleton className="h-10 w-10 rounded-full bg-zinc-800" />
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-10 w-10 rounded-full hover:bg-zinc-800"
-                >
-                  <Avatar className="h-10 w-10 border-2 border-emerald-500/20">
-                    <AvatarFallback className="bg-emerald-500/10 text-emerald-400 font-semibold">
-                      {currentUser?.name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-56 bg-zinc-900 border-zinc-800"
-                align="end"
-                forceMount
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full hover:bg-zinc-800"
               >
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none text-zinc-100">
-                      {currentUser?.name}
-                    </p>
-                    <p className="text-xs leading-none text-zinc-400">
-                      {currentUser?.email}
-                    </p>
-                    <div className="pt-1">
-                      <Badge
-                        className={`${
-                          roleColors[
-                            currentUser?.role as keyof typeof roleColors
-                          ]
-                        } capitalize text-xs`}
-                      >
-                        {currentUser?.role}
-                      </Badge>
-                    </div>
+                <Avatar className="h-10 w-10 border-2 border-emerald-500/20">
+                  <AvatarFallback className="bg-emerald-500/10 text-emerald-400 font-semibold">
+                    {currentUser?.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56 bg-zinc-900 border-zinc-800"
+              align="end"
+              forceMount
+            >
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none text-zinc-100">
+                    {currentUser?.name}
+                  </p>
+                  <p className="text-xs leading-none text-zinc-400">
+                    {currentUser?.email}
+                  </p>
+                  <div className="pt-1">
+                    <Badge
+                      className={`${
+                        roleColors[currentUser?.role as keyof typeof roleColors]
+                      } capitalize text-xs`}
+                    >
+                      {currentUser?.role}
+                    </Badge>
                   </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-zinc-800" />
-                <DropdownMenuItem
-                  className="text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer"
-                  onClick={() =>
-                    setSelectedUser(
-                      users.find(
-                        (u) => u._id.toString() === currentUser?._id.toString()
-                      ) || null
-                    )
-                  }
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>View Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-zinc-800" />
-                <DropdownMenuItem
-                  className="text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-zinc-800" />
+              <DropdownMenuItem
+                className="text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer"
+                onClick={() =>
+                  setSelectedUser(
+                    users.find(
+                      (u) => u._id.toString() === currentUser?._id.toString()
+                    ) || null
+                  )
+                }
+              >
+                <User className="mr-2 h-4 w-4" />
+                <span>View Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-zinc-800" />
+              <DropdownMenuItem
+                className="text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Summary Cards */}
@@ -1007,18 +994,23 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {selectedTicket.reply && (
+                {selectedTicket.replies.length > 0 && (
                   <div>
                     <h4 className="text-emerald-400 font-semibold mb-2">
-                      Latest Reply
+                      Replies
                     </h4>
-                    <div className="bg-zinc-800 p-4 rounded-lg border border-zinc-700">
-                      <p className="text-zinc-300 leading-relaxed">
-                        {selectedTicket.reply}
-                      </p>
-                      <p className="text-zinc-500 text-sm mt-2">
-                        Updated: {formatDate(selectedTicket.updatedAt)}
-                      </p>
+                    <div className="space-y-4">
+                      {selectedTicket.replies.map((reply, index) => (
+                        <div key={index}>
+                          <p className="text-zinc-100">{reply.message}</p>
+                          <p className="text-zinc-400 text-xs">
+                            {formatDate(reply.createdAt)}
+                          </p>
+                          <p className="text-zinc-400 text-xs">
+                            By: {reply.createdBy.name}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -1226,32 +1218,35 @@ export default function Dashboard() {
                         className="bg-zinc-800 border-zinc-700 text-zinc-100"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="assignedTo" className="text-zinc-300 pb-3">
-                      Assigned To
-                    </Label>
-                    <Select
-                      value={editingTicket.assignedTo.name}
-                      onValueChange={(value) =>
-                        handleTicketInputChange("assignedTo", value)
-                      }
-                    >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                        {users.map((user) => (
-                          <SelectItem
-                            key={user._id.toString()}
-                            value={user._id.toString()}
-                          >
-                            {user.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Label
+                        htmlFor="assignedTo"
+                        className="text-zinc-300 pb-3 "
+                      >
+                        Assigned To
+                      </Label>
+                      <Select
+                        value={editingTicket.assignedTo.name}
+                        onValueChange={(value) =>
+                          handleTicketInputChange("assignedTo", value)
+                        }
+                      >
+                        <SelectTrigger className="bg-zinc-800 border-zinc-100 text-zinc-100 min-w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                          {users.map((user) => (
+                            <SelectItem
+                              key={user._id.toString()}
+                              value={user._id.toString()}
+                            >
+                              {user.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div>
@@ -1287,19 +1282,19 @@ export default function Dashboard() {
                     />
                   </div>
 
-                  <div>
+                  {/* <div>
                     <Label htmlFor="reply" className="text-zinc-300 pb-3">
                       Reply
                     </Label>
                     <Textarea
                       id="reply"
-                      value={editingTicket.reply}
+                      value={editingTicket.replies}
                       onChange={(e) =>
                         handleTicketInputChange("reply", e.target.value)
                       }
                       className="bg-zinc-800 border-zinc-700 text-zinc-100"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
@@ -1500,7 +1495,6 @@ export default function Dashboard() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Delete User Confirmation Dialog */}
         <AlertDialog
           open={!!deleteUserId}
           onOpenChange={() => setDeleteUserId(null)}

@@ -32,25 +32,14 @@ import { formatDateTime } from "@/lib/dateTimeFormatter";
 
 import { Ticket as TicketType, Reply } from "@/types";
 
-const statusColors = {
-  open: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  "in-progress": "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  resolved: "bg-green-500/10 text-green-400 border-green-500/20",
-  closed: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-};
-
-const priorityColors = {
-  low: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-  medium: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  high: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  urgent: "bg-red-500/10 text-red-400 border-red-500/20",
-};
+import { statusColors, priorityColors } from "@/lib/colors";
 
 const statusIcons = {
-  open: AlertCircle,
-  "in-progress": Clock,
-  resolved: CheckCircle,
-  closed: XCircle,
+  todo: AlertCircle,
+  in_progress: Clock,
+  closed: CheckCircle,
+  open: AlertCircle, // Add mapping for "open" status
+  resolved: CheckCircle, // Add mapping for "resolved" status
 };
 
 export default function AssignedTickets() {
@@ -62,7 +51,7 @@ export default function AssignedTickets() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [detailModal, setDetailModal] = useState(false);
+  const [isReplied, setIsReplied] = useState(false);
   const [viewTicket, setViewTicket] = useState<TicketType | null>(null);
 
   // Mock data - replace with actual API calls
@@ -88,28 +77,6 @@ export default function AssignedTickets() {
     fetchData();
   }, []);
 
-  const loadReplies = async (ticketId: string) => {
-    // Mock replies - replace with actual API call
-    const mockReplies: Reply[] = [
-      {
-        id: "1",
-        ticketId,
-        message:
-          "I've started investigating this issue. Initial analysis shows it might be related to the authentication service.",
-        createdAt: "2024-01-15T11:00:00Z",
-      },
-      {
-        id: "2",
-        ticketId,
-        message:
-          "Found the root cause. The session timeout was set too low. Working on a fix.",
-        createdAt: "2024-01-15T13:30:00Z",
-      },
-    ];
-
-    setReplies(mockReplies);
-  };
-
   const handleReplySubmit = async () => {
     if (!selectedTicket || !replyMessage.trim()) {
       toast.error("Please enter a reply message");
@@ -119,40 +86,26 @@ export default function AssignedTickets() {
     setIsSubmitting(true);
 
     try {
-      // Mock API call - replace with actual API
-      const newReply: Reply = {
-        id: Date.now().toString(),
-        ticketId: selectedTicket._id.toString(),
-        message: replyMessage,
+      const res = await apiFetch("/tickets/ticket-reply", {
+        method: "PUT",
+        body: JSON.stringify({
+          ticketId: selectedTicket._id.toString(),
+          message: replyMessage,
+        }),
+      });
 
-        createdAt: new Date().toISOString(),
-      };
-
-      setReplies([...replies, newReply]);
-
-      // // Update ticket status if changed
-      if (replyStatus && replyStatus !== selectedTicket.status) {
-        const updatedTickets = tickets.map((ticket) =>
-          ticket._id.toString() === selectedTicket._id
-            ? {
-                ...ticket,
-                status: replyStatus as TicketType["status"],
-                updatedAt: new Date().toISOString(),
-              }
-            : ticket
-        );
-        setTickets(updatedTickets);
-        setSelectedTicket({
-          ...selectedTicket,
-          status: replyStatus as TicketType["status"],
-        });
+      if (!res.success) {
+        throw new Error(res.message || "Failed to send reply.");
       }
 
       setReplyMessage("");
       setReplyStatus("");
-      toast.success("Reply sent successfully!");
-    } catch (error) {
-      toast.error("Failed to send reply. Please try again.");
+      toast.success("💬 Reply sent successfully!");
+    } catch (error: any) {
+      console.error("Error sending reply:", error);
+      toast.error(
+        error.message || "❌ Failed to send reply. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -161,7 +114,6 @@ export default function AssignedTickets() {
   const openReplyModal = (ticket: TicketType) => {
     setSelectedTicket(ticket);
     setReplyStatus(ticket.status);
-    loadReplies(ticket._id.toString());
     setIsDialogOpen(true);
   };
 
@@ -231,7 +183,7 @@ export default function AssignedTickets() {
 
         <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
           {tickets.map((ticket) => {
-            const StatusIcon = statusIcons[ticket.status];
+            const StatusIcon: any = statusIcons[ticket.status];
 
             return (
               <Card
@@ -265,6 +217,7 @@ export default function AssignedTickets() {
                     </div>
                   </div>
                 </CardHeader>
+
                 <CardContent className="pt-0">
                   <p className="text-zinc-300 text-sm mb-4 line-clamp-2">
                     {ticket.description}
@@ -274,6 +227,7 @@ export default function AssignedTickets() {
                       <span>Category: {ticket.category}</span>
                       <span>Updated: {formatDateTime(ticket.updatedAt)}</span>
                     </div>
+
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <DialogTrigger asChild>
                         <Button
@@ -356,7 +310,7 @@ export default function AssignedTickets() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-zinc-400 hover:text-white"
+                      className="text-zinc-400 hover:text-zinc-800 p"
                       onClick={() => setViewTicket(ticket)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
@@ -394,6 +348,7 @@ export default function AssignedTickets() {
             priority: viewTicket.priority,
             reporter: (viewTicket as any).reporter ?? "",
             assignedTo: (viewTicket as any).assignedTo ?? null,
+
             createdAt: viewTicket.createdAt,
             updatedAt: (viewTicket as any).updatedAt ?? "",
             relatedSkills: (viewTicket as any).relatedSkills ?? [],

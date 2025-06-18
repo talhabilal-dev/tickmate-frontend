@@ -10,7 +10,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Clock, User, Edit, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Clock,
+  User,
+  Edit,
+  CheckCircle,
+  AlertCircle,
+  Trash2,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDateTime } from "@/lib/dateTimeFormatter";
@@ -21,6 +38,7 @@ export default function TicketDetailModal({
   isOpen,
   onClose,
 }: TicketDetailModalProps) {
+  const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
   const [status, setStatus] = useState(ticket.status);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,6 +47,30 @@ export default function TicketDetailModal({
     in_progress: "border-blue-500 text-blue-400 bg-blue-500/10",
     resolved: "border-emerald-500 text-emerald-400 bg-emerald-500/10",
     closed: "border-zinc-500 text-zinc-400 bg-zinc-500/10",
+  };
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    try {
+      const res = await apiFetch("/tickets/delete-ticket", {
+        method: "DELETE",
+        body: JSON.stringify({ ticketId }),
+      });
+
+      if (!res.success) {
+        toast.error("❌ Failed to delete ticket.");
+        throw new Error(`Failed to delete ticket: ${res.status}`);
+      }
+
+      if (res.success) {
+        toast.success("🗑️ Ticket deleted successfully!");
+        setDeleteTicketId(null);
+      }
+
+      // Optionally refetch tickets or update UI
+    } catch (error) {
+      toast.error("❌ Failed to delete ticket.");
+      console.error("Error deleting ticket:", error);
+    }
   };
 
   const handleToggleResolved = async (ticketId: string) => {
@@ -60,7 +102,7 @@ export default function TicketDetailModal({
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case "open":
+      case "todo":
         return "bg-amber-500/10 text-amber-400 border-amber-500/20";
       case "in_progress":
         return "bg-blue-500/10 text-blue-400 border-blue-500/20";
@@ -242,14 +284,55 @@ export default function TicketDetailModal({
                   <Button
                     variant="outline"
                     onClick={() => handleToggleResolved(ticket.id)}
-                    className="border-emerald-700 text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300"
+                    className="border-emerald-700 text-emerald-800 hover:bg-emerald-900/20 hover:text-emerald-300"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Mark as Resolved
                   </Button>
                 )}
+                <Button
+                  variant="destructive"
+                  size="default"
+                  onClick={() => setDeleteTicketId(ticket.id.toString())}
+                  className="p-0 text-red-100 hover:bg-red-500/10 hover:text-red-300"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             )}
+
+            <AlertDialog
+              open={!!deleteTicketId}
+              onOpenChange={() => setDeleteTicketId(null)}
+            >
+              <AlertDialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-red-400">
+                    Delete Ticket
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-zinc-300">
+                    Are you sure you want to delete this ticket? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel
+                    onClick={() => setDeleteTicketId(null)}
+                    className="border-zinc-600 text-zinc-800 hover:text-white hover:bg-zinc-800"
+                  >
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() =>
+                      deleteTicketId && handleDeleteTicket(deleteTicketId)
+                    }
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {/* Sidebar */}
@@ -298,6 +381,7 @@ export default function TicketDetailModal({
                     </Badge>
                   )}
                 </div>
+
 
                 <div className="flex flex-wrap gap-2">
                   <span className="text-zinc-400">Related Skills</span>
