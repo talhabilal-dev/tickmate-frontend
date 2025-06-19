@@ -3,23 +3,16 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Home, Ticket, Settings, Menu, X, LogOut } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter, usePathname } from "next/navigation";
+import UserDialog from "./admin/user-details-modal";
 
 import { UserType } from "@/types";
+import { UserMenu } from "./profile-modal";
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
@@ -27,6 +20,8 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<UserType | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -41,7 +36,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
-  const signOut = async () => {
+  const logout = async () => {
     try {
       const res = await apiFetch("/auth/logout", {
         method: "POST",
@@ -142,7 +137,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   variant="destructive"
                   onClick={() => {
                     closeSidebar();
-                    signOut();
+                    logout();
                   }}
                   className="w-full"
                 >
@@ -180,7 +175,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             ))}
           </nav>
           <div className="p-4 border-t border-zinc-800">
-            <Button variant="destructive" onClick={signOut} className="w-full">
+            <Button variant="destructive" onClick={logout} className="w-full">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -213,53 +208,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             )}
 
             <div className="flex items-center space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="User"
-                      />
-                      <AvatarFallback className="bg-emerald-500 text-white">
-                        {user?.name?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-56 bg-zinc-900 border-zinc-800"
-                  align="end"
-                  forceMount
-                >
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-white">
-                        {user?.name}
-                      </p>
-                      <p className="text-xs leading-none text-zinc-400">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-zinc-800" />
-                  <DropdownMenuSeparator className="bg-zinc-800" />
-                  <DropdownMenuItem
-                    className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                    onClick={signOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu
+                currentUser={user}
+                users={[user] as UserType[]}
+                onLogout={logout}
+                onViewProfile={(user) => {
+                  if (!user) {
+                    setUser(null);
+                    setSelectedUser(null);
+                    return;
+                  }
+
+                  setSelectedUser(user);
+
+                  setUser(user ?? null);
+                }}
+              />
             </div>
           </div>
         </div>
-
+        <UserDialog
+          selectedUser={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
         {/* Page content */}
         <main className="p-6">{children}</main>
       </div>

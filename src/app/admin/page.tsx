@@ -3,15 +3,9 @@ import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import UserEditDialog from "@/components/admin/user-edit-modal";
+import UserDialog from "@/components/admin/user-details-modal";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -28,28 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import TicketDetailModal from "@/components/ticket-detail-modal";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Eye,
   Edit,
@@ -59,9 +33,6 @@ import {
   CheckCircle,
   Clock,
   Search,
-  UserCheck,
-  LogOut,
-  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -71,15 +42,13 @@ import {
   FiltersSkeleton,
 } from "@/components/skeletons/admin-dashboard/skeleton";
 
-import {
-  UserType,
-  TicketType,
-  UserRole,
-  TicketPriority,
-  TicketStatus,
-} from "@/types";
+import { UserType, TicketType } from "@/types";
 import { formatDate, formatDateTime } from "@/lib/dateTimeFormatter";
 import { statusColors, priorityColors, roleColors } from "@/lib/colors";
+import StatsCard from "@/components/stats-card";
+import DeleteDialog from "@/components/delete-modal";
+import EditTicketDialog from "@/components/edit-ticket-modal";
+import { UserMenu } from "@/components/profile-modal";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -98,14 +67,10 @@ export default function Dashboard() {
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
-
-  // Ticket filters
   const [ticketSearchTerm, setTicketSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [isUserSaving, setIsUserSaving] = useState(false);
-
-  // User filters
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [activeFilter, setActiveFilter] = useState<string>("all");
@@ -177,6 +142,39 @@ export default function Dashboard() {
     completedTickets: completedTickets,
     inProgressTickets: inProgressTickets,
   };
+
+  const statItems = [
+    {
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: <Users className="h-5 w-5 text-emerald-400" />,
+      color: "text-emerald-400",
+    },
+    {
+      title: "Active Users",
+      value: stats.activeUsers,
+      icon: <Users className="h-5 w-5 text-blue-400" />,
+      color: "text-blue-400",
+    },
+    {
+      title: "Total Tickets",
+      value: stats.totalTickets,
+      icon: <Ticket className="h-5 w-5 text-purple-400" />,
+      color: "text-purple-400",
+    },
+    {
+      title: "Resolved",
+      value: stats.completedTickets,
+      icon: <CheckCircle className="h-5 w-5 text-emerald-400" />,
+      color: "text-emerald-400",
+    },
+    {
+      title: "In Progress",
+      value: stats.inProgressTickets,
+      icon: <Clock className="h-5 w-5 text-yellow-400" />,
+      color: "text-yellow-400",
+    },
+  ];
 
   // Ticket functions
   const handleEditTicket = (ticket: TicketType) => {
@@ -360,68 +358,21 @@ export default function Dashboard() {
           </div>
 
           {/* Profile Dropdown */}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="relative h-10 w-10 rounded-full hover:bg-zinc-800"
-              >
-                <Avatar className="h-10 w-10 border-2 border-emerald-500/20">
-                  <AvatarFallback className="bg-emerald-500/10 text-emerald-400 font-semibold">
-                    {currentUser?.name?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-56 bg-zinc-900 border-zinc-800"
-              align="end"
-              forceMount
-            >
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none text-zinc-100">
-                    {currentUser?.name}
-                  </p>
-                  <p className="text-xs leading-none text-zinc-400">
-                    {currentUser?.email}
-                  </p>
-                  <div className="pt-1">
-                    <Badge
-                      className={`${
-                        roleColors[currentUser?.role as keyof typeof roleColors]
-                      } capitalize text-xs`}
-                    >
-                      {currentUser?.role}
-                    </Badge>
-                  </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-zinc-800" />
-              <DropdownMenuItem
-                className="text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer"
-                onClick={() =>
-                  setSelectedUser(
-                    users.find(
-                      (u) => u._id.toString() === currentUser?._id.toString()
-                    ) || null
-                  )
-                }
-              >
-                <User className="mr-2 h-4 w-4" />
-                <span>View Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-zinc-800" />
-              <DropdownMenuItem
-                className="text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserMenu
+            currentUser={currentUser}
+            users={users}
+            onLogout={handleLogout}
+            onViewProfile={(user) => {
+              if (!user) {
+                setSelectedUser(null);
+                return;
+              }
+              const found = users.find(
+                (u) => u._id.toString() === user._id.toString()
+              );
+              setSelectedUser(found ?? null);
+            }}
+          />
         </div>
 
         {/* Summary Cards */}
@@ -436,84 +387,9 @@ export default function Dashboard() {
             </>
           ) : (
             <>
-              <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-zinc-400">
-                    Total Users
-                  </CardTitle>
-                  <Users className="h-4 w-4 text-emerald-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-emerald-400">
-                    {stats.totalUsers}
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1">Registered users</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-zinc-400">
-                    Active Users
-                  </CardTitle>
-                  <UserCheck className="h-4 w-4 text-blue-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-400">
-                    {stats.activeUsers}
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1">Currently active</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-zinc-400">
-                    Total Tickets
-                  </CardTitle>
-                  <Ticket className="h-4 w-4 text-purple-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-purple-400">
-                    {stats.totalTickets}
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    All support tickets
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-zinc-400">
-                    Resolved
-                  </CardTitle>
-                  <CheckCircle className="h-4 w-4 text-emerald-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-emerald-400">
-                    {stats.completedTickets}
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Completed tickets
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-zinc-400">
-                    In Progress
-                  </CardTitle>
-                  <Clock className="h-4 w-4 text-yellow-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-yellow-400">
-                    {stats.inProgressTickets}
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1">Active tickets</p>
-                </CardContent>
-              </Card>
+              {statItems.map((item, i) => (
+                <StatsCard key={i} delay={i * 0.1} {...item} variant="admin" />
+              ))}
             </>
           )}
         </div>
@@ -920,511 +796,47 @@ export default function Dashboard() {
         )}
 
         {/* User Details Modal */}
-        <Dialog
-          open={!!selectedUser}
-          onOpenChange={() => setSelectedUser(null)}
-        >
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-emerald-400 text-xl">
-                {selectedUser?.name}
-              </DialogTitle>
-            </DialogHeader>
-
-            {selectedUser && (
-              <div className="space-y-6">
-                <div className="flex flex-wrap gap-4">
-                  <Badge
-                    className={`${roleColors[selectedUser.role]} capitalize`}
-                  >
-                    {selectedUser.role}
-                  </Badge>
-                  <Badge
-                    className={
-                      selectedUser.isActive
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        : "bg-red-500/10 text-red-400 border-red-500/20"
-                    }
-                  >
-                    {selectedUser.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-zinc-400">Email:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {selectedUser.email}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-400">Role:</span>
-                    <p className="text-zinc-100 font-medium capitalize">
-                      {selectedUser.role}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-400">Created:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {formatDate(selectedUser.createdAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-400">Last Login:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {formatDateTime(selectedUser.loginTime)}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-emerald-400 font-semibold mb-2">
-                    Skills
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedUser.skills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-emerald-500/30 text-emerald-300"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        <UserDialog
+          selectedUser={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
 
         {/* Edit Ticket Modal */}
-        <Dialog
+        <EditTicketDialog
           open={!!editingTicket}
-          onOpenChange={() => setEditingTicket(null)}
-        >
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 w-full md:min-w-3xl lg:min-w-3xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-emerald-400 text-xl">
-                Edit Ticket
-              </DialogTitle>
-            </DialogHeader>
-
-            {editingTicket && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <Label htmlFor="title" className="text-zinc-300 pb-3">
-                      Title
-                    </Label>
-                    <Input
-                      id="title"
-                      value={editingTicket.title}
-                      onChange={(e) =>
-                        handleTicketInputChange("title", e.target.value)
-                      }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description" className="text-zinc-300 pb-3">
-                      Description
-                    </Label>
-                    <Textarea
-                      id="description"
-                      value={editingTicket.description}
-                      onChange={(e) =>
-                        handleTicketInputChange("description", e.target.value)
-                      }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100 min-h-[100px]"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="status" className="text-zinc-300 pb-3">
-                        Status
-                      </Label>
-                      <Select
-                        value={editingTicket.status}
-                        onValueChange={(value: TicketStatus) =>
-                          handleTicketInputChange("status", value)
-                        }
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 text-white border-zinc-700">
-                          <SelectItem value="open">Open</SelectItem>
-                          <SelectItem value="in_progress">
-                            In Progress
-                          </SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="priority" className="text-zinc-300 pb-3">
-                        Priority
-                      </Label>
-                      <Select
-                        value={editingTicket.priority}
-                        onValueChange={(value: TicketPriority) =>
-                          handleTicketInputChange("priority", value)
-                        }
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="category" className="text-zinc-300 pb-3">
-                        Category
-                      </Label>
-                      <Input
-                        id="category"
-                        value={editingTicket.category}
-                        onChange={(e) =>
-                          handleTicketInputChange("category", e.target.value)
-                        }
-                        className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="deadline" className="text-zinc-300 pb-3">
-                        Deadline
-                      </Label>
-                      <Input
-                        id="deadline"
-                        type="date"
-                        value={editingTicket.deadline}
-                        onChange={(e) =>
-                          handleTicketInputChange("deadline", e.target.value)
-                        }
-                        className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                      />
-                    </div>
-
-                    <div>
-                      <Label
-                        htmlFor="assignedTo"
-                        className="text-zinc-300 pb-3 "
-                      >
-                        Assigned To
-                      </Label>
-                      <Select
-                        value={editingTicket.assignedTo.name}
-                        onValueChange={(value) =>
-                          handleTicketInputChange("assignedTo", value)
-                        }
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-100 text-zinc-100 min-w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                          {users.map((user) => (
-                            <SelectItem
-                              key={user._id.toString()}
-                              value={user._id.toString()}
-                            >
-                              {user.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label
-                      htmlFor="helpfulNotes"
-                      className="text-zinc-300 pb-3"
-                    >
-                      Helpful Notes
-                    </Label>
-                    <Textarea
-                      id="helpfulNotes"
-                      value={editingTicket.helpfulNotes}
-                      onChange={(e) =>
-                        handleTicketInputChange("helpfulNotes", e.target.value)
-                      }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                    />
-                  </div>
-
-                  <div>
-                    <Label
-                      htmlFor="relatedSkills"
-                      className="text-zinc-300 pb-3"
-                    >
-                      Related Skills (comma-separated)
-                    </Label>
-                    <Input
-                      id="relatedSkills"
-                      value={editingTicket.relatedSkills.join(", ")}
-                      onChange={(e) => handleTicketSkillsChange(e.target.value)}
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                      placeholder="React, Node.js, TypeScript"
-                    />
-                  </div>
-
-                  {/* <div>
-                    <Label htmlFor="reply" className="text-zinc-300 pb-3">
-                      Reply
-                    </Label>
-                    <Textarea
-                      id="reply"
-                      value={editingTicket.replies}
-                      onChange={(e) =>
-                        handleTicketInputChange("reply", e.target.value)
-                      }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                    />
-                  </div> */}
-                </div>
-              </div>
-            )}
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setEditingTicket(null)}
-                className="border-zinc-600 text-zinc-800 hover:text-white hover:bg-zinc-800"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveTicketEdit}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          ticket={editingTicket}
+          users={users}
+          onClose={() => setEditingTicket(null)}
+          onSave={handleSaveTicketEdit}
+          onInputChange={handleTicketInputChange}
+          onSkillsChange={handleTicketSkillsChange}
+        />
 
         {/* Edit User Modal */}
-        <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-emerald-400 text-xl">
-                Edit User
-              </DialogTitle>
-            </DialogHeader>
-
-            {editingUser && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <Label htmlFor="userName" className="text-zinc-300 pb-2">
-                      Name
-                    </Label>
-                    <Input
-                      id="userName"
-                      value={editingUser.name}
-                      onChange={(e) =>
-                        handleUserInputChange("name", e.target.value)
-                      }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100 pb-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="userEmail" className="text-zinc-300 pb-2">
-                      Email
-                    </Label>
-                    <Input
-                      id="userEmail"
-                      type="email"
-                      value={editingUser.email}
-                      onChange={(e) =>
-                        handleUserInputChange("email", e.target.value)
-                      }
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="userRole" className="text-zinc-300 pb-2">
-                        Role
-                      </Label>
-                      <Select
-                        value={editingUser.role}
-                        onValueChange={(value: UserRole) =>
-                          handleUserInputChange("role", value)
-                        }
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white pb-2">
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="moderator">Moderator</SelectItem>
-                          <SelectItem value="user">User</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label
-                        htmlFor="userStatus"
-                        className="text-zinc-300 pb-2"
-                      >
-                        Status
-                      </Label>
-                      <Select
-                        value={editingUser.isActive ? "active" : "inactive"}
-                        onValueChange={(value) =>
-                          handleUserInputChange("isActive", value === "active")
-                        }
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700 text-white pb-2">
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="userSkills" className="text-zinc-300 pb-2">
-                      Skills (comma-separated)
-                    </Label>
-                    <Input
-                      id="userSkills"
-                      value={editingUser.skills.join(", ")}
-                      onChange={(e) => handleUserSkillsChange(e.target.value)}
-                      className="bg-zinc-800 border-zinc-700 text-zinc-100"
-                      placeholder="React, Node.js, TypeScript"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setEditingUser(null)}
-                className="border-zinc-600 text-zinc-800 hover:text-white hover:bg-zinc-800"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveUserEdit}
-                disabled={isUserSaving}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
-              >
-                {isUserSaving && (
-                  <svg
-                    className="animate-spin h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    ></path>
-                  </svg>
-                )}
-                {isUserSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <UserEditDialog
+          editingUser={editingUser}
+          isSaving={isUserSaving}
+          onClose={() => setEditingUser(null)}
+          onChange={handleUserInputChange}
+          onSkillsChange={handleUserSkillsChange}
+          onSave={handleSaveUserEdit}
+        />
 
         {/* Delete Ticket Confirmation Dialog */}
-        <AlertDialog
-          open={!!deleteTicketId}
-          onOpenChange={() => setDeleteTicketId(null)}
-        >
-          <AlertDialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-400">
-                Delete Ticket
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-zinc-300">
-                Are you sure you want to delete this ticket? This action cannot
-                be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => setDeleteTicketId(null)}
-                className="border-zinc-600 text-zinc-800 hover:text-white hover:bg-zinc-800"
-              >
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() =>
-                  deleteTicketId && handleDeleteTicket(deleteTicketId)
-                }
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
-        <AlertDialog
+        <DeleteDialog
+          open={!!deleteTicketId}
+          onClose={() => setDeleteTicketId(null)}
+          onConfirm={() => deleteTicketId && handleDeleteTicket(deleteTicketId)}
+        />
+
+        {/* Delete User Confirmation Dialog */}
+
+        <DeleteDialog
           open={!!deleteUserId}
-          onOpenChange={() => setDeleteUserId(null)}
-        >
-          <AlertDialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-400">
-                Delete User
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-zinc-300">
-                Are you sure you want to delete this user? This action cannot be
-                undone and will affect all related tickets.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => setDeleteUserId(null)}
-                className="border-zinc-600 text-zinc-800 hover:text-white hover:bg-zinc-800"
-              >
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteUserId && handleDeleteUser(deleteUserId)}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          onClose={() => setDeleteUserId(null)}
+          onConfirm={() => deleteUserId && handleDeleteUser(deleteUserId)}
+        />
       </div>
     </div>
   );

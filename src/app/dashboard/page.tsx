@@ -55,7 +55,7 @@ export default function Dashboard() {
               ticketSummary.totalTickets,
               previousTicketSummary.totalTickets
             ),
-            icon: <Ticket className="h-4 w-4" />,
+            icon: <Ticket className="h-5 w-5 text-purple-400" />,
             color: "text-emerald-400",
           },
           {
@@ -65,7 +65,7 @@ export default function Dashboard() {
               ticketSummary.inProgress,
               previousTicketSummary.inProgress
             ),
-            icon: <Clock className="h-4 w-4" />,
+            icon: <Clock className="h-5 w-5 text-yellow-400" />,
             color: "text-amber-400",
           },
           {
@@ -75,7 +75,7 @@ export default function Dashboard() {
               ticketSummary.completed,
               previousTicketSummary.completed
             ),
-            icon: <CheckCircle className="h-4 w-4" />,
+            icon: <CheckCircle className="h-5 w-5 text-emerald-400" />,
             color: "text-teal-400",
           },
         ]
@@ -102,7 +102,12 @@ export default function Dashboard() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {stats.map((stat, index) => (
-              <StatsCard key={stat.title} {...stat} delay={index * 0.1} />
+              <StatsCard
+                key={stat.title}
+                {...stat}
+                delay={index * 0.1}
+                variant="user"
+              />
             ))}
           </div>
 
