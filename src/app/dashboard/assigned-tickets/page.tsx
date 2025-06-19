@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDateTime } from "@/lib/dateTimeFormatter";
 
-import { Ticket as TicketType, Reply } from "@/types";
+import { TicketType, Reply } from "@/types";
 
 import { statusColors, priorityColors } from "@/lib/colors";
 
@@ -38,8 +38,6 @@ const statusIcons = {
   todo: AlertCircle,
   in_progress: Clock,
   closed: CheckCircle,
-  open: AlertCircle, // Add mapping for "open" status
-  resolved: CheckCircle, // Add mapping for "resolved" status
 };
 
 export default function AssignedTickets() {
@@ -196,16 +194,6 @@ export default function AssignedTickets() {
                       <CardTitle className="text-white text-lg">
                         {ticket.title}
                       </CardTitle>
-                      <div className="flex items-center gap-3 text-sm text-zinc-400">
-                        <div className="flex items-center gap-1">
-                          <User className="h-4 w-4" />
-                          Created by {ticket.createdBy}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {formatDateTime(ticket.createdAt)}
-                        </div>
-                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={priorityColors[ticket.priority]}>
@@ -222,6 +210,15 @@ export default function AssignedTickets() {
                   <p className="text-zinc-300 text-sm mb-4 line-clamp-2">
                     {ticket.description}
                   </p>
+                  <div className="flex flex-wrapitems-center gap-2 mb-4 text-sm text-zinc-400">
+                    <div className="flex items-center gap-1">
+                      <User className="h-4 w-4" />
+                      Created by{" "}
+                      <span className="font-semibold text-emerald-300">
+                        {ticket.createdBy.name}
+                      </span>
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 text-xs text-zinc-500">
                       <span>Category: {ticket.category}</span>
@@ -340,20 +337,22 @@ export default function AssignedTickets() {
       {viewTicket && (
         <TicketDetailModal
           ticket={{
-            id: viewTicket._id.toString(),
+            _id: viewTicket._id.toString(),
             title: viewTicket.title,
             description: viewTicket.description,
             helpfulNotes: viewTicket.helpfulNotes,
             status: viewTicket.status,
             priority: viewTicket.priority,
-            reporter: (viewTicket as any).reporter ?? "",
             assignedTo: (viewTicket as any).assignedTo ?? null,
-
             createdAt: viewTicket.createdAt,
-            updatedAt: (viewTicket as any).updatedAt ?? "",
             relatedSkills: (viewTicket as any).relatedSkills ?? [],
-            canChangeStatus: false,
+            updatedAt: (viewTicket as any).updatedAt ?? "",
+            category: (viewTicket as any).category ?? "",
+            deadline: (viewTicket as any).deadline ?? "",
+            createdBy: (viewTicket as any).createdBy ?? null,
+            replies: (viewTicket as any).replies ?? [],
           }}
+          canChangeStatus={false}
           isOpen={!!viewTicket}
           onClose={() => setViewTicket(null)}
         />

@@ -194,19 +194,22 @@ export default function TicketsPage() {
       {selectedTicket && (
         <TicketDetailModal
           ticket={{
-            id: selectedTicket._id.toString(),
+            _id: selectedTicket._id.toString(),
             title: selectedTicket.title,
             description: selectedTicket.description,
             helpfulNotes: selectedTicket.helpfulNotes,
             status: selectedTicket.status,
             priority: selectedTicket.priority,
-            reporter: (selectedTicket as any).reporter ?? "",
             assignedTo: (selectedTicket as any).assignedTo ?? null,
             createdAt: selectedTicket.createdAt,
             relatedSkills: (selectedTicket as any).relatedSkills ?? [],
             updatedAt: (selectedTicket as any).updatedAt ?? "",
-            canChangeStatus: true,
+            category: (selectedTicket as any).category ?? "",
+            deadline: (selectedTicket as any).deadline ?? "",
+            createdBy: (selectedTicket as any).createdBy ?? null,
+            replies: (selectedTicket as any).replies ?? [],
           }}
+          canChangeStatus={true}
           isOpen={!!selectedTicket}
           onClose={() => setSelectedTicket(null)}
         />

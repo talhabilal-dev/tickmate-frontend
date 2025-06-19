@@ -40,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import TicketDetailModal from "@/components/ticket-detail-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -894,130 +895,29 @@ export default function Dashboard() {
         </Tabs>
 
         {/* Ticket Details Modal */}
-        <Dialog
-          open={!!selectedTicket}
-          onOpenChange={() => setSelectedTicket(null)}
-        >
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 w-full md:min-w-3xl lg:min-w-3xl max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-emerald-400 text-xl">
-                {selectedTicket?.title}
-              </DialogTitle>
-            </DialogHeader>
-
-            {selectedTicket && (
-              <div className="space-y-6">
-                <div className="flex flex-wrap gap-4">
-                  <Badge
-                    className={`${
-                      statusColors[selectedTicket.status]
-                    } capitalize`}
-                  >
-                    {selectedTicket.status.replace("_", " ")}
-                  </Badge>
-                  <Badge
-                    className={`${
-                      priorityColors[selectedTicket.priority]
-                    } capitalize`}
-                  >
-                    {selectedTicket.priority}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="border-zinc-600 text-zinc-300"
-                  >
-                    {selectedTicket.category}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-zinc-400">Created By:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {selectedTicket.createdBy?.name}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-400">Assigned To:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {selectedTicket.assignedTo?.name}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-400">Deadline:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {formatDate(selectedTicket.deadline)}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-400">Created:</span>
-                    <p className="text-zinc-100 font-medium">
-                      {formatDate(selectedTicket.createdAt)}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-emerald-400 font-semibold mb-2">
-                    Description
-                  </h4>
-                  <p className="text-zinc-300 leading-relaxed">
-                    {selectedTicket.description}
-                  </p>
-                </div>
-
-                {selectedTicket.helpfulNotes && (
-                  <div>
-                    <h4 className="text-emerald-400 font-semibold mb-2">
-                      Helpful Notes
-                    </h4>
-                    <p className="text-zinc-300 leading-relaxed">
-                      {selectedTicket.helpfulNotes}
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <h4 className="text-emerald-400 font-semibold mb-2">
-                    Related Skills
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTicket.relatedSkills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-emerald-500/30 text-emerald-300"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {selectedTicket.replies.length > 0 && (
-                  <div>
-                    <h4 className="text-emerald-400 font-semibold mb-2">
-                      Replies
-                    </h4>
-                    <div className="space-y-4">
-                      {selectedTicket.replies.map((reply, index) => (
-                        <div key={index}>
-                          <p className="text-zinc-100">{reply.message}</p>
-                          <p className="text-zinc-400 text-xs">
-                            {formatDate(reply.createdAt)}
-                          </p>
-                          <p className="text-zinc-400 text-xs">
-                            By: {reply.createdBy.name}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {selectedTicket && (
+          <TicketDetailModal
+            ticket={{
+              _id: selectedTicket._id.toString(),
+              title: selectedTicket.title,
+              description: selectedTicket.description,
+              helpfulNotes: selectedTicket.helpfulNotes,
+              status: selectedTicket.status,
+              priority: selectedTicket.priority,
+              assignedTo: (selectedTicket as any).assignedTo ?? null,
+              createdAt: selectedTicket.createdAt,
+              relatedSkills: (selectedTicket as any).relatedSkills ?? [],
+              updatedAt: (selectedTicket as any).updatedAt ?? "",
+              category: (selectedTicket as any).category ?? "",
+              deadline: (selectedTicket as any).deadline ?? "",
+              createdBy: (selectedTicket as any).createdBy ?? null,
+              replies: (selectedTicket as any).replies ?? [],
+            }}
+            canChangeStatus={false}
+            isOpen={!!selectedTicket}
+            onClose={() => setSelectedTicket(null)}
+          />
+        )}
 
         {/* User Details Modal */}
         <Dialog

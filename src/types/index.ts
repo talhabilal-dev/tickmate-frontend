@@ -1,5 +1,5 @@
 export type UserRole = "admin" | "moderator" | "user";
-export type TicketStatus = "open" | "in_progress" | "completed" | "closed";
+export type TicketStatus = "todo" | "in_progress" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "urgent";
 export interface UserType {
   _id: string;
@@ -40,7 +40,7 @@ export interface Ticket {
   _id: string;
   title: string;
   description: string;
-  status: "open" | "in_progress" | "closed";
+  status: "todo" | "in_progress" | "closed";
   priority: "low" | "medium" | "high" | "urgent";
   assignedTo: string;
   createdBy: string;
@@ -65,24 +65,8 @@ export interface Reply {
 }
 
 export interface TicketDetailModalProps {
-  ticket: {
-    id: string;
-    title: string;
-    description: string;
-    helpfulNotes: string;
-    status: string;
-    priority: string;
-    reporter: string;
-    assignedTo?: {
-      _id: string;
-      name: string;
-    } | null;
-
-    relatedSkills: string[];
-    createdAt: string;
-    updatedAt: string;
-    canChangeStatus: boolean;
-  };
+  ticket: TicketType;
+  canChangeStatus: boolean;
   isOpen: boolean;
   onClose: () => void;
 }

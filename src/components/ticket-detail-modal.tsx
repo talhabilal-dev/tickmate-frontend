@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,23 +30,17 @@ import {
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDateTime } from "@/lib/dateTimeFormatter";
-
 import { TicketDetailModalProps } from "@/types";
+
 export default function TicketDetailModal({
   ticket,
   isOpen,
+  canChangeStatus,
   onClose,
 }: TicketDetailModalProps) {
   const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
   const [status, setStatus] = useState(ticket.status);
   const [isLoading, setIsLoading] = useState(false);
-
-  const statusStyles: Record<string, string> = {
-    todo: "border-yellow-500 text-yellow-400 bg-yellow-500/10",
-    in_progress: "border-blue-500 text-blue-400 bg-blue-500/10",
-    resolved: "border-emerald-500 text-emerald-400 bg-emerald-500/10",
-    closed: "border-zinc-500 text-zinc-400 bg-zinc-500/10",
-  };
 
   const handleDeleteTicket = async (ticketId: string) => {
     try {
@@ -91,7 +84,7 @@ export default function TicketDetailModal({
 
       // Optionally update local state
       setStatus((prev) =>
-        prev === "open" ? "resolved" : prev === "resolved" ? "open" : prev
+        prev === "todo" ? "closed" : prev === "closed" ? "todo" : prev
       );
     } catch (error) {
       toast.error("⚠️ Error updating ticket status.");
@@ -154,7 +147,7 @@ export default function TicketDetailModal({
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-white text-xl font-semibold leading-tight">
                 <span className="text-zinc-400 font-mono text-sm">
-                  #{ticket.id}
+                  #{ticket._id.toString()}
                 </span>
                 <br />
                 {ticket.title}
@@ -278,12 +271,12 @@ export default function TicketDetailModal({
 
             {/* Actions */}
 
-            {ticket.canChangeStatus && (
+            {canChangeStatus && (
               <div className="flex flex-wrap gap-3">
                 {status.toLowerCase() !== "closed" && (
                   <Button
                     variant="outline"
-                    onClick={() => handleToggleResolved(ticket.id)}
+                    onClick={() => handleToggleResolved(ticket._id)}
                     className="border-emerald-700 text-emerald-800 hover:bg-emerald-900/20 hover:text-emerald-300"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
@@ -293,7 +286,7 @@ export default function TicketDetailModal({
                 <Button
                   variant="destructive"
                   size="default"
-                  onClick={() => setDeleteTicketId(ticket.id.toString())}
+                  onClick={() => setDeleteTicketId(ticket._id.toString())}
                   className="p-0 text-red-100 hover:bg-red-500/10 hover:text-red-300"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -381,8 +374,20 @@ export default function TicketDetailModal({
                     </Badge>
                   )}
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-400"> Created By</span>
 
-
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="bg-emerald-500 text-white text-xs">
+                        {getInitials(ticket?.createdBy?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-white font-medium">
+                      {ticket?.createdBy?.name}
+                    </span>
+                  </div>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="text-zinc-400">Related Skills</span>
                   {ticket.relatedSkills.map((skill: string, index: number) => (
