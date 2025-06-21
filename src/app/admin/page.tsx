@@ -181,7 +181,7 @@ export default function Dashboard() {
     setEditingTicket({ ...ticket });
   };
 
-  const handleSaveTicketEdit = () => {
+  const handleSaveTicketEdit = async () => {
     if (!editingTicket) return;
 
     const updatedTicket = {
@@ -189,17 +189,39 @@ export default function Dashboard() {
       updatedAt: new Date().toISOString(),
     };
 
-    setTickets((prev) =>
-      prev.map((ticket) =>
-        ticket._id.toString() === editingTicket._id.toString()
-          ? updatedTicket
-          : ticket
-      )
-    );
-    setEditingTicket(null);
+    try {
+      toast.loading("Updating ticket...");
 
-    if (typeof window !== "undefined") {
-      alert("Ticket updated successfully!");
+      const res = await apiFetch("/tickets/edit-ticket", {
+        method: "PUT",
+        body: JSON.stringify(updatedTicket),
+      });
+
+      if (!res || res.error) {
+        toast.error("❌ Failed to update ticket.");
+        throw new Error(res?.message || "Failed to update ticket");
+      }
+      if (!res.success) {
+        toast.error("❌ Failed to update ticket.");
+        throw new Error(res.message || "Failed to update ticket");
+      }
+      const savedTicket = res.ticket; // Already parsed JSON
+
+      setTickets((prev) =>
+        prev.map((ticket) =>
+          ticket._id.toString() === savedTicket._id.toString()
+            ? savedTicket
+            : ticket
+        )
+      );
+
+      setEditingTicket(null);
+      toast.dismiss(); // optional, but nice UX
+      toast.success("Ticket updated successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.dismiss();
+      toast.error("Failed to update the ticket");
     }
   };
 
@@ -446,12 +468,11 @@ export default function Dashboard() {
                         </SelectTrigger>
                         <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
                           <SelectItem value="all">All Status</SelectItem>
-                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="todo">Open</SelectItem>
                           <SelectItem value="in_progress">
                             In Progress
                           </SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
                         </SelectContent>
                       </Select>
                       <Select

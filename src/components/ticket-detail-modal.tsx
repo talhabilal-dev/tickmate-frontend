@@ -84,7 +84,7 @@ export default function TicketDetailModal({
 
       // Optionally update local state
       setStatus((prev) =>
-        prev === "todo" ? "closed" : prev === "closed" ? "todo" : prev
+        prev === "todo" ? "completed" : prev === "completed" ? "todo" : prev
       );
     } catch (error) {
       toast.error("⚠️ Error updating ticket status.");
@@ -99,7 +99,7 @@ export default function TicketDetailModal({
         return "bg-amber-500/10 text-amber-400 border-amber-500/20";
       case "in_progress":
         return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-      case "closed":
+      case "completed":
         return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
       default:
         return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
@@ -273,7 +273,7 @@ export default function TicketDetailModal({
 
             {canChangeStatus && (
               <div className="flex flex-wrap gap-3">
-                {status.toLowerCase() !== "closed" && (
+                {status.toLowerCase() !== "completed" && (
                   <Button
                     variant="outline"
                     onClick={() => handleToggleResolved(ticket._id)}

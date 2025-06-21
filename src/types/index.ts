@@ -1,5 +1,5 @@
 export type UserRole = "admin" | "moderator" | "user";
-export type TicketStatus = "todo" | "in_progress" | "closed";
+export type TicketStatus = "todo" | "in_progress" | "completed";
 export type TicketPriority = "low" | "medium" | "high" | "urgent";
 export interface UserType {
   _id: string;
@@ -40,7 +40,7 @@ export interface Ticket {
   _id: string;
   title: string;
   description: string;
-  status: "todo" | "in_progress" | "closed";
+  status: "todo" | "in_progress" | "completed";
   priority: "low" | "medium" | "high" | "urgent";
   assignedTo: string;
   createdBy: string;

@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 import { TicketType as Ticket, TicketPriority, TicketStatus } from "@/types"; // Adjust to your actual types
+import { formatDate, formatDateForInput } from "@/lib/dateTimeFormatter";
 
 interface UserOption {
   _id: string;
@@ -99,7 +100,7 @@ export default function EditTicketDialog({
                   <SelectContent className="bg-zinc-800 text-white border-zinc-700">
                     <SelectItem value="todo">Open</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -147,7 +148,7 @@ export default function EditTicketDialog({
                 <Input
                   id="deadline"
                   type="date"
-                  value={ticket.deadline}
+                  value={formatDateForInput(ticket.deadline)}
                   onChange={(e) => onInputChange("deadline", e.target.value)}
                   className="bg-zinc-800 border-zinc-700 text-zinc-100"
                 />

@@ -37,7 +37,7 @@ import { statusColors, priorityColors } from "@/lib/colors";
 const statusIcons = {
   todo: AlertCircle,
   in_progress: Clock,
-  closed: CheckCircle,
+  completed: CheckCircle,
 };
 
 export default function AssignedTickets() {

@@ -57,6 +57,7 @@ export default function SigninForm() {
       setIsLoading(true);
 
       const res = await apiFetch("/auth/login", {
+        credentials: "include",
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
