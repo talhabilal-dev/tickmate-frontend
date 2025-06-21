@@ -14,5 +14,17 @@ export async function apiFetch(
     },
   });
 
-  return res.json();
+  const contentType = res.headers.get("Content-Type");
+
+  // Try to parse JSON only if the response looks like JSON
+  const data = contentType?.includes("application/json")
+    ? await res.json()
+    : null;
+
+  if (!res.ok) {
+    // Throw error with response data
+    throw new Error(data?.error || "Something went wrong");
+  }
+
+  return data;
 }
