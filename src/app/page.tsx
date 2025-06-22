@@ -10,6 +10,9 @@ import {
   Ticket,
   Users,
   Zap,
+  Github,
+  Linkedin,
+  ArrowRight as ArrowRightIcon,
 } from "lucide-react";
 import Link from "next/link";
 import TicketFlow from "@/components/ticket-flow";
@@ -206,28 +209,29 @@ export default function HomePage() {
             </div>
             <div className="flex gap-8">
               <Link
-                href="/about"
+                href="https://github.com/talhabilal-dev/tickmate-frontend"
+                target="_blank"
                 className="text-zinc-400 hover:text-white transition-colors"
               >
-                About
+                <Github className="inline h-5 w-5 mr-1" />
+                GitHub
               </Link>
               <Link
-                href="/features"
+                href="https://talhabilal.dev"
+                target="_blank"
                 className="text-zinc-400 hover:text-white transition-colors"
               >
-                Features
+                <ArrowRightIcon className="inline h-5 w-5 mr-1" />
+                Portfolio
               </Link>
               <Link
-                href="/pricing"
+                href="https://www.linkedin.com/in/talhabilal-dev/"
+                target="_blank"
                 className="text-zinc-400 hover:text-white transition-colors"
               >
-                Pricing
-              </Link>
-              <Link
-                href="/contact"
-                className="text-zinc-400 hover:text-white transition-colors"
-              >
-                Contact
+                <Linkedin className="inline h-5 w-5 mr-1" />
+
+                Linked In
               </Link>
             </div>
           </div>
