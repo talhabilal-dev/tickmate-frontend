@@ -92,34 +92,6 @@ export default function Navbar() {
             className="md:hidden bg-zinc-900 border-b border-zinc-800"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
-              <Link
-                href="/"
-                className="block py-2 text-zinc-300 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Features
-              </Link>
-              <Link
-                href="/"
-                className="block py-2 text-zinc-300 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Pricing
-              </Link>
-              <Link
-                href="/"
-                className="block py-2 text-zinc-300 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                About
-              </Link>
-              <Link
-                href="/"
-                className="block py-2 text-zinc-300 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Contact
-              </Link>
               <div className="pt-4 flex flex-col space-y-3">
                 <Button
                   asChild
