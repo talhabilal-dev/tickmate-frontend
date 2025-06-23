@@ -31,7 +31,6 @@ export default function ProfileSettings() {
         const res: { user?: UserProfile } = await apiFetch("/auth/user", {
           method: "GET",
         });
-        console.log(res)
         if (res?.user) {
           setProfile(res.user);
         }
