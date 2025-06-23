@@ -139,14 +139,6 @@ export default function SigninForm() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              Forgot password?
-            </button>
-          </div>
 
           <Button
             type="submit"
