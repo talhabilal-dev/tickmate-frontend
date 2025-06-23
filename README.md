@@ -9,7 +9,7 @@
 
 *Modern React frontend powering intelligent ticket management*
 
-[Live Demo](https://helpdesk-demo.vercel.app) • [Contributing](#contributing)
+[Live Demo](https://tickmate.talhabilal.dev/) • [Contributing](#contributing)
 
 </div>
 
@@ -17,8 +17,31 @@
 
 ## Image Preview
 
+<div align="center">
 
+### 🎉 Home Page
 
+![Home Page](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667145/home_gtt5rg.png)
+
+### 🎉 Admin Dashboard
+
+![Admin Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667144/admin_spkar3.png)
+![Admin Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667144/admin-2_g5pvom.png)
+
+### 🎉 User Dashboard
+
+![User Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667146/user-dashboard_zz7or7.png)
+![User Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667144/create_wkqrhi.png)
+![User Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667146/view_tfljvk.png)
+![User Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667144/assigned_nhqjgj.png)
+![User Dashboard](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667144/profile_doeq5b.png)
+
+### Authentication
+
+![Login](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667144/signin_yz9dyw.png)
+![Register](https://res.cloudinary.com/dvdktrhsz/image/upload/v1750667145/signup_zqgf2f.png)
+
+</div>
 
 ## 🎯 Overview
 
