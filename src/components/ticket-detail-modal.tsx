@@ -30,7 +30,7 @@ import {
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDateTime } from "@/lib/dateTimeFormatter";
-import { TicketDetailModalProps } from "@/types";
+import type { TicketDetailModalProps } from "@/types";
 
 export default function TicketDetailModal({
   ticket,
@@ -141,9 +141,9 @@ export default function TicketDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 min-w-full md:min-w-5xl  lg:max-w-6xl max-h-[90vh] overflow-hidden">
-        <DialogHeader className="pb-4 border-b border-zinc-800">
-          <div className="flex items-start justify-between gap-4">
+      <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 w-full max-w-[95vw] sm:max-w-4xl lg:max-w-6xl max-h-[90vh] overflow-hidden">
+        <DialogHeader className="pb-4 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-white text-xl font-semibold leading-tight">
                 <span className="text-zinc-400 font-mono text-sm">
@@ -154,7 +154,7 @@ export default function TicketDetailModal({
               </DialogTitle>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-wrap">
                 <Badge
                   className={`${getStatusColor(
                     status
@@ -183,29 +183,27 @@ export default function TicketDetailModal({
           </div>
         </DialogHeader>
 
-        <div className="flex flex-col xl:flex-row gap-8 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 overflow-y-auto max-h-[calc(90vh-120px)]">
           {/* Main Content */}
           <div className="flex-1 space-y-6">
             {/* Description */}
-            <div className="bg-zinc-800/30 rounded-lg p-6">
+            <div className="bg-zinc-800/30 rounded-lg p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Edit className="h-5 w-5 text-zinc-400" />
                 Description
               </h3>
               <div className="prose prose-zinc prose-invert max-w-3xl">
-                <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                  {ticket.description}
-                </p>
+                <p className="text-zinc-300">{ticket.description}</p>
               </div>
             </div>
 
             {/* Helpful Notes */}
-            <div className="bg-zinc-800/30 rounded-lg p-6">
+            <div className="bg-zinc-800/30 rounded-lg p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-zinc-400" />
                 Helpful Notes
               </h3>
-              <div className="prose prose-zinc prose-invert max-w-none">
+              <div className="prose prose-zinc prose-invert max-w-3xl">
                 {ticket.helpfulNotes ? (
                   <div className="text-zinc-300 leading-relaxed max-h-80 overflow-y-auto">
                     <div
@@ -272,12 +270,12 @@ export default function TicketDetailModal({
             {/* Actions */}
 
             {canChangeStatus && (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {status.toLowerCase() !== "completed" && (
                   <Button
                     variant="outline"
                     onClick={() => handleToggleResolved(ticket._id)}
-                    className="border-emerald-700 text-emerald-800 hover:bg-emerald-900/20 hover:text-emerald-300"
+                    className="border-emerald-700 text-emerald-800 hover:bg-emerald-900/20 hover:text-emerald-300 w-full sm:w-auto"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Mark as Resolved
@@ -287,9 +285,10 @@ export default function TicketDetailModal({
                   variant="destructive"
                   size="default"
                   onClick={() => setDeleteTicketId(ticket._id.toString())}
-                  className="p-0 text-red-100 hover:bg-red-500/10 hover:text-red-300"
+                  className="bg-red-600 hover:bg-red-700 text-red-100 w-full sm:w-auto"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Ticket
                 </Button>
               </div>
             )}
@@ -329,9 +328,9 @@ export default function TicketDetailModal({
           </div>
 
           {/* Sidebar */}
-          <div className="w-full xl:w-96 space-y-6">
+          <div className="w-full lg:w-80 xl:w-96 space-y-4 lg:space-y-6">
             {/* Status Control */}
-            <div className="bg-zinc-800/50 rounded-lg p-4 space-y-4">
+            <div className="bg-zinc-800/50 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
               <h4 className="font-medium text-white flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-zinc-400" />
                 Status
@@ -345,7 +344,7 @@ export default function TicketDetailModal({
             </div>
 
             {/* Ticket Information */}
-            <div className="bg-zinc-800/50 rounded-lg p-4 space-y-4">
+            <div className="bg-zinc-800/50 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
               <h4 className="font-medium text-white flex items-center gap-2">
                 <User className="h-4 w-4 text-zinc-400" />
                 Details
@@ -388,7 +387,7 @@ export default function TicketDetailModal({
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap sm:justify-between gap-2">
                   <span className="text-zinc-400">Related Skills</span>
                   {ticket.relatedSkills.map((skill: string, index: number) => (
                     <Badge
@@ -403,7 +402,7 @@ export default function TicketDetailModal({
 
                 {/* Timestamps */}
                 <div className="pt-2 border-t border-zinc-700 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-zinc-500" />
                       <span className="text-zinc-400">Created</span>
@@ -413,7 +412,7 @@ export default function TicketDetailModal({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-zinc-500" />
                       <span className="text-zinc-400">Updated</span>
