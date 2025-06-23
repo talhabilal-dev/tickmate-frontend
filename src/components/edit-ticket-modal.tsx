@@ -77,7 +77,7 @@ export default function EditTicketDialog({
               </Label>
               <Textarea
                 id="description"
-                value={ticket.description}
+                value={ticket?.description}
                 onChange={(e) => onInputChange("description", e.target.value)}
                 className="bg-zinc-800 border-zinc-700 text-zinc-100 min-h-[100px]"
               />
@@ -89,7 +89,7 @@ export default function EditTicketDialog({
                   Status
                 </Label>
                 <Select
-                  value={ticket.status}
+                  value={ticket?.status}
                   onValueChange={(value: TicketStatus) =>
                     onInputChange("status", value)
                   }
@@ -110,7 +110,7 @@ export default function EditTicketDialog({
                   Priority
                 </Label>
                 <Select
-                  value={ticket.priority}
+                  value={ticket?.priority}
                   onValueChange={(value: TicketPriority) =>
                     onInputChange("priority", value)
                   }
@@ -135,7 +135,7 @@ export default function EditTicketDialog({
                 </Label>
                 <Input
                   id="category"
-                  value={ticket.category}
+                  value={ticket?.category}
                   onChange={(e) => onInputChange("category", e.target.value)}
                   className="bg-zinc-800 border-zinc-700 text-zinc-100"
                 />
@@ -148,7 +148,7 @@ export default function EditTicketDialog({
                 <Input
                   id="deadline"
                   type="date"
-                  value={formatDateForInput(ticket.deadline)}
+                  value={formatDateForInput(ticket?.deadline)}
                   onChange={(e) => onInputChange("deadline", e.target.value)}
                   className="bg-zinc-800 border-zinc-700 text-zinc-100"
                 />
@@ -159,16 +159,16 @@ export default function EditTicketDialog({
                   Assigned To
                 </Label>
                 <Select
-                  value={ticket.assignedTo._id}
+                  value={ticket?.assignedTo?._id}
                   onValueChange={(value) => onInputChange("assignedTo", value)}
                 >
                   <SelectTrigger className="bg-zinc-800 border-zinc-100 text-zinc-100 min-w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                    {users.map((user) => (
-                      <SelectItem key={user._id} value={user._id}>
-                        {user.name}
+                    {users?.map((user) => (
+                      <SelectItem key={user?._id} value={user._id}>
+                        {user?.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -182,7 +182,7 @@ export default function EditTicketDialog({
               </Label>
               <Textarea
                 id="helpfulNotes"
-                value={ticket.helpfulNotes}
+                value={ticket?.helpfulNotes}
                 onChange={(e) => onInputChange("helpfulNotes", e.target.value)}
                 className="bg-zinc-800 border-zinc-700 text-zinc-100"
               />
@@ -194,7 +194,7 @@ export default function EditTicketDialog({
               </Label>
               <Input
                 id="relatedSkills"
-                value={ticket.relatedSkills.join(", ")}
+                value={ticket?.relatedSkills?.join(", ")}
                 onChange={(e) => onSkillsChange(e.target.value)}
                 className="bg-zinc-800 border-zinc-700 text-zinc-100"
                 placeholder="React, Node.js, TypeScript"

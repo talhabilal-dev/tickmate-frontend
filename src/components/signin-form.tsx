@@ -70,7 +70,7 @@ export default function SigninForm() {
         setError(res.message);
       }
     } catch (err: any) {
-      setError("Invalid email or password.");
+      setError("Something went wrong while signing in. Please try again.");
     } finally {
       setIsLoading(false);
     }

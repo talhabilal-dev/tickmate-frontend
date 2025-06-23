@@ -16,15 +16,11 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Admin route protection
   if (path.startsWith("/admin")) {
     if (!adminToken) {
       console.log("Missing adminToken → redirecting to /auth");
       return NextResponse.redirect(new URL("/auth", req.url));
     }
-
-    // Optional: Verify token structure (e.g., decode header for extra paranoia)
-    // We'll just trust it's present for now
     return NextResponse.next();
   }
 
