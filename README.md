@@ -11,6 +11,8 @@
 
 [Live Demo](https://tickmate.talhabilal.dev/) • [Contributing](#contributing)
 
+All thanks to best teacher [Hitesh Chauhdary](https://youtu.be/OtJV9SCyfuE?si=-Z7E3rZsqtghLztg)
+
 </div>
 
 ---
