@@ -235,7 +235,7 @@ Our design system is built on shadcn/ui primitives, customized for our brand:
 
 **My Portfolio**: [https://talhabilal.dev](https://talhabilal.dev)
 
-**Made with ❤️ by the Talha Bilal**
+**Made with ❤️ by the Talha Bilal**<br>
 **Inspired By Hitesh Chauhdary & Chai Aur Code**
 
 </div>
