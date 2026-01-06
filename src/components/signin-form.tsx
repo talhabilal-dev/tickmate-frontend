@@ -139,7 +139,6 @@ export default function SigninForm() {
             </div>
           </div>
 
-
           <Button
             type="submit"
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -148,6 +147,27 @@ export default function SigninForm() {
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+
+        <div className="mt-6 pt-6 border-t border-zinc-800">
+          <p className="text-sm text-zinc-400 mb-3">Test Credentials:</p>
+          <div className="space-y-3">
+            <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                {" "}
+                <p className="text-xs text-zinc-500 mb-1">Admin Account</p>
+                <p className="text-sm text-zinc-300 font-mono">
+                  admin@mail.com
+                </p>
+                <p className="text-sm text-zinc-300 font-mono">Admin1234@</p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-500 mb-1">User Account</p>
+                <p className="text-sm text-zinc-300 font-mono">test@mail.com</p>
+                <p className="text-sm text-zinc-300 font-mono">Test1234@</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
