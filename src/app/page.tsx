@@ -77,7 +77,7 @@ export default function HomePage() {
                 size="lg"
                 className="bg-gradient-to-r  from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white border-0"
               >
-                <Link href="/signup">
+                <Link href="/auth">
                   Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
